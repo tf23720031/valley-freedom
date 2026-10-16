@@ -9,10 +9,10 @@ import { ItineraryPage } from './ItineraryPage'
 
 beforeEach(() => { localStorage.clear(); resetStoreForTests() })
 describe('itinerary draft UI', () => {
-  it('adds an experience to a saved draft without submitting a reservation', async () => {
+  it('keeps the experience entry point and adds a draft without submitting a reservation', async () => {
     const user = userEvent.setup()
     render(<AppStateProvider><FeedbackProvider><MemoryRouter initialEntries={['/itinerary']}><Routes><Route path="/itinerary" element={<ItineraryPage/>}/></Routes></MemoryRouter></FeedbackProvider></AppStateProvider>)
-    await user.click(screen.getAllByRole('button', { name: /加入$/ })[0])
+    await user.click(screen.getAllByRole('button', { name: '加入行程' })[0])
     await waitFor(() => expect(JSON.parse(localStorage.getItem('valley-freedom-state-v1')!).itineraries[0].items).toHaveLength(1))
     const state = JSON.parse(localStorage.getItem('valley-freedom-state-v1')!)
     expect(state.bookings).toHaveLength(4)

@@ -1,4 +1,5 @@
-import type { AppState, Experience, Role } from './types'
+import type { AppState, Companion, Experience, Role } from './types'
+import { experiencePhotoSet, photos } from './photoSources'
 export const makeId = (prefix: string) => `${prefix}-${globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`}`
 const experienceSeed: Array<[string, string, string, number, number]> = [
   ['文旦田裡的一日農事', '食農體驗', '走進果園，從枝葉與季節認識瑞穗文旦。', 120, 680],
@@ -10,18 +11,19 @@ const experienceSeed: Array<[string, string, string, number, number]> = [
   ['老屋裡的地方記憶', '聚落走讀', '從器物與照片拼起聚落生活片段。', 80, 380],
   ['縱谷晨光攝影散步', '自然觀察', '用慢速步行捕捉山線和水田的晨間光影。', 90, 0],
 ]
-const experiencePhotos = [
-  '/photos/pomelo-orchard.webp', '/photos/rice-kitchen.webp', '/photos/bamboo-weaving.webp', '/photos/tea-harvest.webp',
-  '/photos/valley-trail.webp', '/photos/pomelo-kitchen.webp', '/photos/valley-hero.webp', '/photos/river-study.webp',
-]
 export function createInitialState(): AppState {
   const experiences: Experience[] = experienceSeed.map(([title, category, description, durationMinutes, price], index) => ({
     id: `experience-${index + 1}`, title, category, description, location: index % 2 ? '花蓮縣瑞穗鄉' : '木日光文旦驛站', meetingPoint: '木日光文旦驛站入口', durationMinutes, price,
-    image: experiencePhotos[index], tags: [category, '瑞穗'], featured: index < 3, published: true, isDemo: true,
+    image: experiencePhotoSet[index], tags: [category, '瑞穗'], featured: index < 3, published: true, isDemo: true,
   }))
   const sessions = experiences.slice(0, 7).map((experience, index) => ({ id: index === 0 ? 'session-pomelo-1' : `session-${index + 1}`, experienceId: experience.id, date: '2026-11-14', startTime: index % 2 ? '14:00' : '09:30', endTime: index % 2 ? '16:00' : '11:30', capacity: index === 0 ? 10 : 12, pilot: false }))
+  const companions: Companion[] = [
+    { id: 'companion-lin', name: '林雨禾', avatar: photos.personLin, bio: '在瑞穗生活的地方工作者，熟悉舞鶴台地與農村日常。喜歡陪旅人慢慢走、把問題說清楚。', serviceAreas: ['瑞穗', '舞鶴', '玉里'], languages: ['中文', '英文'], services: ['companionship', 'language-support', 'local-information'], qualifications: ['地方文化培訓（示意）'], restrictions: ['不提供依法須資格的導覽、載客接送或高風險活動'], ratePerHour: 900, availability: [{ id: 'slot-lin-1', date: '2026-11-15', startTime: '13:00', endTime: '18:00' }, { id: 'slot-lin-2', date: '2026-11-16', startTime: '09:00', endTime: '16:00' }], demo: true },
+    { id: 'companion-chen', name: '陳以安', avatar: photos.personChen, bio: '長住瑞穗的雙語活動協作者，擅長現場溝通與活動流程支援。', serviceAreas: ['瑞穗', '富里'], languages: ['中文', '英文', '日文'], services: ['companionship', 'event-support', 'language-support'], qualifications: ['活動安全訓練（示意）'], restrictions: ['不承接專業導覽、交通接送及水域或高風險活動'], ratePerHour: 1100, availability: [{ id: 'slot-chen-1', date: '2026-11-15', startTime: '12:00', endTime: '18:00' }, { id: 'slot-chen-2', date: '2026-11-16', startTime: '12:00', endTime: '18:00' }], demo: true },
+    { id: 'companion-wu', name: '吳映秋', avatar: photos.personWu, bio: '返鄉投入地方活動協作，熟悉手作場域、聚落生活與親子同行需求。', serviceAreas: ['瑞穗', '光復'], languages: ['中文'], services: ['companionship', 'event-support', 'local-information'], qualifications: [], restrictions: ['不提供導遊、接送或需專業資格的活動服務'], ratePerHour: 800, availability: [{ id: 'slot-wu-1', date: '2026-11-15', startTime: '09:00', endTime: '17:00' }], demo: true },
+  ]
   return {
-    schemaVersion: 1, role: 'traveler' as Role, travelerId: 'traveler-demo', youthId: 'youth-demo', experiences, sessions,
+    schemaVersion: 2, role: 'traveler' as Role, travelerId: 'traveler-demo', youthId: 'youth-demo', companionId: 'companion-lin', experiences, sessions, companions, serviceRequests: [],
     bookings: [
       { id: 'booking-pending', sessionId: 'session-pomelo-1', experienceId: 'experience-1', travelerId: 'traveler-demo', partySize: 2, status: 'pending', createdAt: '2026-10-10T10:00:00.000Z' },
       { id: 'booking-confirmed', sessionId: 'session-pomelo-1', experienceId: 'experience-1', travelerId: 'traveler-other', partySize: 1, status: 'confirmed', createdAt: '2026-10-10T10:00:00.000Z' },

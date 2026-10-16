@@ -1,9 +1,10 @@
 import { createId } from './ids'
 import type { AppState, DomainResult, Experience, Session, Task } from './types'
+import { photos } from './photoSources'
 
 export function createExperience(state: AppState, input: { title: string; category: string; description: string; price: number; durationMinutes: number; location: string; now: string }): DomainResult<AppState> {
   if (!input.title.trim() || !input.description.trim() || input.price < 0 || input.durationMinutes < 15) return { ok: false, error: { code: 'INVALID_EXPERIENCE', message: '請確認名稱、介紹、價格與體驗時間。' } }
-  const experience: Experience = { id: createId('experience'), title: input.title.trim(), category: input.category, description: input.description.trim(), price: input.price, durationMinutes: input.durationMinutes, location: input.location.trim() || '花蓮縣瑞穗鄉', meetingPoint: input.location.trim() || '木日光文旦驛站入口', image: '/photos/pomelo-orchard.webp', tags: [input.category], published: true, isDemo: true }
+  const experience: Experience = { id: createId('experience'), title: input.title.trim(), category: input.category, description: input.description.trim(), price: input.price, durationMinutes: input.durationMinutes, location: input.location.trim() || '花蓮縣瑞穗鄉', meetingPoint: input.location.trim() || '木日光文旦驛站入口', image: photos.garden, tags: [input.category], published: true, isDemo: true }
   return { ok: true, value: { ...state, experiences: [...state.experiences, experience] }, valueId: experience.id }
 }
 export function updateExperience(state: AppState, input: { experienceId: string; title: string; description: string; price: number; durationMinutes: number; location: string }): DomainResult<AppState> {

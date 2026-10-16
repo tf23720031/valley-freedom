@@ -1,5 +1,6 @@
 import { createId } from './ids'
 import type { AppState, DomainResult, Experience, PilotSession, Resource } from './types'
+import { photos } from './photoSources'
 export function addResource(state: AppState, input: Omit<Resource, 'id'>): DomainResult<AppState> {
   if (!input.name.trim() || !input.description.trim()) return { ok: false, error: { code: 'INVALID_RESOURCE', message: '請填寫地方資源名稱與內容。' } }
   const resource: Resource = { ...input, id: createId('resource') }
@@ -31,6 +32,6 @@ export function publishDraft(state: AppState, input: { draftId: string; operator
   const draft = state.drafts.find((item) => item.id === input.draftId)
   if (!draft || draft.stage !== 'feedback' || draft.publishedExperienceId) return { ok: false, error: { code: 'INVALID_STAGE', message: '此草案尚未完成試辦回饋評估，或已正式上架。' } }
   const id = createId('experience')
-  const experience: Experience = { id, title: draft.title, category: '共創體驗', description: draft.description, location: '木日光文旦驛站', meetingPoint: '木日光文旦驛站入口', durationMinutes: 120, price: 680, image: '/photos/pomelo-kitchen.webp', tags: ['地方共創'], published: true, sourceDraftId: draft.id, isDemo: true }
+  const experience: Experience = { id, title: draft.title, category: '共創體驗', description: draft.description, location: '木日光文旦驛站', meetingPoint: '木日光文旦驛站入口', durationMinutes: 120, price: 680, image: photos.food, tags: ['地方共創'], published: true, sourceDraftId: draft.id, isDemo: true }
   return { ok: true, value: { ...state, experiences: [...state.experiences, experience], drafts: state.drafts.map((item) => item.id === draft.id ? { ...item, stage: 'published', publishedExperienceId: id } : item), changeLog: [...state.changeLog, { id: createId('change'), draftId: draft.id, actorId: input.operatorId, at: input.now, note: '體驗正式上架。' }] }, valueId: id }
 }

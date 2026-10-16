@@ -6,8 +6,9 @@ async function openMobileNav(page: import('@playwright/test').Page) {
 
 test('publishes a co-created experience with its source draft still traceable', async ({ page }) => {
   await page.goto('/')
+  await page.getByLabel('切換展示角色').selectOption('operator')
   await openMobileNav(page)
-  await page.getByRole('link', { name: '地方共創', exact: true }).click()
+  await page.getByRole('link', { name: '新體驗共創', exact: true }).click()
   await expect(page.getByText('草案 ID：draft-pomelo')).toBeVisible()
   await page.getByRole('button', { name: '正式上架為地方體驗' }).click()
   await page.getByRole('button', { name: '確認正式上架' }).click()

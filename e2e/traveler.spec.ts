@@ -6,7 +6,7 @@ async function openMobileNav(page: import('@playwright/test').Page) {
 
 test('traveler discovers an experience, books it, then cancels with a recorded reason', async ({ page }) => {
   await page.goto('/')
-  await expect(page.getByRole('heading', { name: /把縱谷的日常/ })).toBeVisible()
+  await expect(page.getByRole('heading', { name: /想去哪，就去哪/ })).toBeVisible()
   await openMobileNav(page)
   await page.getByRole('link', { name: '地方體驗', exact: true }).click()
   await page.getByRole('link', { name: /文旦田裡的一日農事/ }).first().click()
