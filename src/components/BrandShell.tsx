@@ -7,7 +7,7 @@ import type { Role } from '../domain/types'
 import { ConfirmDialog, useNotify } from './Feedback'
 
 const links: Record<Role, Array<[string, string]>> = {
-  traveler: [['/companions', '找在地旅伴'], ['/itinerary', '我的自由行'], ['/bookings', '我的預約'], ['/experiences', '地方體驗']],
+  traveler: [['/explore', '沿著花東走'], ['/companions', '找在地旅伴'], ['/itinerary', '我的自由行'], ['/bookings', '我的預約']],
   companion: [['/companion', '旅伴工作台'], ['/experiences', '地方體驗']],
   operator: [['/operator', '營運概覽'], ['/operator/experiences', '體驗與場次'], ['/operator/bookings', '預約管理'], ['/operator/tasks', '協作任務'], ['/co-create', '新體驗共創']],
 }

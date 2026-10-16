@@ -1,11 +1,12 @@
 import { expect, test } from '@playwright/test'
 
-test('three-day FIT itinerary requests an English companion, gets accepted, and appears as confirmed', async ({ page }) => {
+test('three-day trip adds a time-slot companion inquiry and a coastal place as separate draft items', async ({ page }) => {
   await page.goto('/itinerary')
   await page.getByLabel('第一天日期').fill('2026-11-14')
   await page.getByLabel('旅行天數').selectOption('3')
   await page.getByRole('button', { name: 'DAY 02' }).click()
-  await page.getByRole('button', { name: '找旅伴陪同' }).first().click()
+  await page.getByRole('button', { name: '新增安排', exact: true }).click()
+  await page.getByRole('button', { name: '找在地旅伴' }).click()
   await expect(page.getByRole('heading', { name: '符合條件的旅伴' })).toBeVisible()
   await expect(page.getByRole('heading', { name: '林雨禾' })).toBeVisible()
   await page.getByRole('button', { name: '提出預約需求' }).first().click()
@@ -20,6 +21,14 @@ test('three-day FIT itinerary requests an English companion, gets accepted, and 
   await page.getByRole('button', { name: '確認服務條件' }).click()
   await page.goto('/itinerary')
   await page.getByRole('button', { name: 'DAY 02' }).click()
-  await expect(page.getByText(/在地旅伴服務.*預約記錄/)).toBeVisible()
-  await expect(page.getByText('預約已確認')).toBeVisible()
+  await expect(page.locator('.trip-event').filter({ hasText: '林雨禾' })).toBeVisible()
+  await expect(page.locator('.trip-event').filter({ hasText: '林雨禾' })).toContainText('已確認')
+  await page.goto('/explore/coast-11')
+  await page.getByRole('link', { name: /眺港咖啡/ }).click()
+  await page.getByLabel('加入哪一天').fill('2026-11-16')
+  await page.getByRole('button', { name: '加入我的行程' }).click()
+  await expect(page.getByText(/已加入自由行程草稿/)).toBeVisible()
+  await page.goto('/itinerary')
+  await page.getByRole('button', { name: 'DAY 03' }).click()
+  await expect(page.getByRole('heading', { name: '眺港咖啡' })).toBeVisible()
 })

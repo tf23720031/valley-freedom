@@ -2,6 +2,122 @@
 .event-edit{grid-template-columns:1fr 1fr 1fr .8fr 1fr 1.2fr auto}
 .event-edit input,.event-edit select{width:100%;min-height:36px;padding:5px 8px;border:1px solid #d7d6ca;background:#fffefa;color:#292d29;font:inherit;font-size:13px}
 @media(max-width:760px){.event-edit{grid-template-columns:1fr 1fr}.hero-caption a{font-size:10px}.available-trip-experiences article{align-items:flex-start}}
+
+/* Readability, mobile companion portrait layout, travel journal and regional directory. */
+body{font-size:17px}
+.button,.text-link,.field-label,.field-label input,.field-label select,.field-label textarea{font-size:16px}
+.page-title-row h1,.regional-intro h1,.place-detail-copy h1{font-size:clamp(40px,5vw,52px);line-height:1.2;letter-spacing:.01em}
+.trip-event .event-content h3{font-size:22px}
+.trip-event .event-content>p,.trip-event .event-content>small{font-size:16px;line-height:1.7}
+.event-edit label{font-size:14px}
+.event-edit input,.event-edit select{font-size:15px}
+.timeline-empty{padding:35px 24px 27px;border-left:1px solid #c6d0c0;background:linear-gradient(90deg,#f0eee7,transparent 82%)}
+.timeline-empty>span{font:14px var(--serif);letter-spacing:.13em;color:#71816c}
+.timeline-empty h2{margin:9px 0;font-size:25px;font-weight:500;color:var(--forest-dark)}
+.timeline-empty p{margin:0;color:#687266;font-size:17px}
+.timeline-first-add,.timeline-gap button{display:flex;align-items:center;justify-content:center;gap:9px;min-height:54px;padding:9px 16px;background:#f1efe8;border:1px solid #d3d8cd;color:#415a43;font-size:16px;cursor:pointer;touch-action:manipulation}
+.timeline-first-add{width:100%;margin:12px 0 20px}
+.timeline-gap{display:flex;align-items:center;gap:15px;padding:8px 0 8px 20px;border-left:1px solid #c6d0c0}
+.timeline-gap>span{min-width:48px;font:15px var(--serif);color:#768471}
+.timeline-gap button{min-height:45px;justify-content:flex-start;padding:8px 14px;background:transparent;border-color:transparent;border-bottom-color:#d3d8cd}
+.timeline-gap button:hover,.timeline-first-add:hover{background:#e9ede5}
+.timeline-quick-menu{display:flex;flex-wrap:wrap;align-items:center;gap:9px;padding:15px;margin:12px 0;background:#efede5;border:1px solid #dddacf}
+.timeline-quick-menu>div{display:grid;gap:3px;flex-basis:100%;color:#314b39}
+.timeline-quick-menu>div b{font-size:19px}.timeline-quick-menu>div span{font-size:16px;color:#697266}
+.timeline-quick-menu>button{min-height:48px;padding:9px 15px;background:#fffefa;border:1px solid #d4d8ce;color:#36543d;font-size:16px;cursor:pointer}
+.timeline-quick-menu>button:first-of-type{margin-left:auto;min-height:42px}
+.trip-request-status{display:grid;gap:6px;margin:15px 0;padding:16px;border-left:3px solid #b29b6b;background:#f3f0e7;color:#40513e}
+.trip-request-status>span{font-size:14px;font-weight:600}.trip-request-status>b{font-size:17px}.trip-request-status small{font-size:15px;color:#6c7368}.trip-request-status>a{font-size:16px;text-decoration:underline}
+.trip-request-status.status-cancelled,.trip-request-status.status-rejected{border-color:#aa7061;background:#f5ece8;color:#70483e}
+.trip-day-actions{display:flex;flex-wrap:wrap;gap:10px}
+.trip-day-heading{margin-top:26px}
+.region-promo{width:min(var(--content),calc(100% - 11.4%));margin:5px auto 75px;padding:40px 5.4%;display:grid;grid-template-columns:.8fr 1.2fr;gap:8%;align-items:center;background:#efede5}
+.region-promo h2{font-size:clamp(36px,4.8vw,58px);font-weight:450;line-height:1.2;color:var(--forest-dark);margin:13px 0}
+.region-promo p{font-size:18px;line-height:1.8;color:#657063;max-width:430px}
+.region-promo a{display:inline-flex;align-items:center;gap:10px;margin-top:9px;border-bottom:1px solid #aab79f;padding:10px 0;font-size:17px;color:var(--forest)}
+.region-promo img{width:100%;height:370px;object-fit:cover}
+.regional-explore{padding:66px 0 100px}
+.regional-intro{max-width:760px;padding:0 0 32px;border-bottom:1px solid var(--line)}
+.regional-intro h1{margin:12px 0}
+.regional-intro p{margin:0 0 12px;font-size:21px;color:#455447}
+.regional-intro small{font-size:16px;line-height:1.7;color:#70766d}
+.region-index{display:flex;flex-wrap:wrap;gap:11px 26px;padding:23px 0;border-bottom:1px solid var(--line)}
+.region-index a{display:flex;align-items:center;gap:9px;font-size:17px;color:#3f5542}.region-index a span{font:14px var(--serif);color:#899683}
+.region-section{padding:62px 0 50px;border-bottom:1px solid var(--line)}
+.region-heading{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(270px,.88fr);min-height:330px;align-items:center;position:relative;background:#efede5}
+.region-heading>img{width:100%;height:330px;object-fit:cover}
+.region-heading>div{padding:30px 9%}
+.region-heading>div>span{font:14px var(--serif);letter-spacing:.13em;color:#788675}
+.region-heading h2{font-size:clamp(32px,4vw,48px);line-height:1.25;font-weight:500;color:var(--forest-dark);margin:13px 0}
+.region-heading p{max-width:350px;margin:0;font-size:17px;line-height:1.8;color:#697166}
+.region-road{position:absolute;right:18px;top:16px;z-index:1;color:#fff;font:13px var(--serif);letter-spacing:.18em;text-shadow:0 1px 7px #233329}
+.region-place-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:32px 7%;padding:34px 4% 0}
+.place-card{display:grid;grid-template-columns:minmax(0,.92fr) minmax(0,1.08fr);gap:20px;align-items:center;min-width:0}
+.place-card-photo{position:relative;min-height:240px;background:#e4e5dc}
+.place-card-photo img{width:100%;height:240px;object-fit:cover}
+.place-card-photo>span,.place-detail-hero>span{position:absolute;left:10px;bottom:10px;padding:5px 8px;background:#fffefaed;color:#5e675b;font-size:13px}
+.place-card-body>span{font-size:14px;color:#74806f}
+.place-card-body h3{margin:6px 0 8px;font-size:24px;line-height:1.3;color:#304936;font-weight:500}
+.place-card-body p{min-height:64px;margin:0;color:#626d62;font-size:16px;line-height:1.65}
+.place-card-body>b{display:inline-flex;align-items:center;gap:7px;margin-top:11px;color:#49634b;font-size:15px;font-weight:500}
+.place-detail{padding:38px 0 90px}
+.back-link{display:inline-flex;align-items:center;gap:8px;margin:7px 0 20px;color:#4c624c;font-size:16px}
+.place-detail-hero{position:relative;height:clamp(300px,45vw,570px);background:#e4e5dc}
+.place-detail-hero img{width:100%;height:100%;object-fit:cover}
+.place-detail-copy{max-width:840px;margin:40px auto 0}
+.place-detail-copy h1{margin:9px 0 12px;color:#2f4934}
+.place-region-note{display:flex;align-items:center;gap:8px;color:#596a58;font-size:17px}
+.place-facts{margin-top:30px;padding:23px 0;border-block:1px solid var(--line)}
+.place-facts h2{margin:0 0 13px;font-size:25px;color:#344d37}
+.place-facts>p,.place-facts li{font-size:17px;line-height:1.75;color:#4c594d}
+.place-facts ul{padding-left:22px}
+.place-facts a{display:inline-flex;align-items:center;gap:6px;color:#365b3a;text-decoration:underline}
+.verification-state{padding:12px 14px;background:#efede5;color:#51624e!important}
+.place-source-list{display:flex;flex-wrap:wrap;gap:12px 22px;margin-top:22px}
+.place-source-list>b{flex-basis:100%;color:#3f5542;font-size:16px}
+.place-source-list a{font-size:15px}
+.place-itinerary-actions{display:grid;grid-template-columns:1fr auto auto;gap:15px;align-items:end;margin-top:24px}
+.place-itinerary-actions .field-label{margin:0}
+@media(max-width:760px){
+ body{font-size:17px}
+ .button{min-height:50px;padding-inline:16px;font-size:16px}
+ .page-title-row h1,.regional-intro h1,.place-detail-copy h1{font-size:34px;line-height:1.25}
+ .companion-result{display:flex;flex-direction:column;gap:0;padding:20px 0}
+ .companion-result>img{display:block;width:100%;height:clamp(250px,75vw,390px);aspect-ratio:4/3;object-fit:cover;object-position:center 37%}
+ .companion-result-main{width:100%;padding:17px 0 4px}
+ .companion-result-main>p{font-size:17px;line-height:1.75}
+ .person-heading h3{font-size:25px}.person-heading>b{font-size:17px}
+ .result-qualifications{font-size:15px;gap:10px 17px}.qualification-note{font-size:15px}.qualification-note small{font-size:14px}.companion-result-main .restriction-note{font-size:15px;line-height:1.65}
+ .regional-explore{padding-top:39px}
+ .regional-intro p{font-size:18px}.regional-intro small{font-size:15px}
+ .region-index{gap:7px;display:grid;grid-template-columns:1fr 1fr}.region-index a{font-size:16px}
+ .region-section{padding:34px 0 30px}
+ .region-heading{display:flex;flex-direction:column;align-items:stretch;min-height:0}
+ .region-heading>img{width:100%;height:260px;order:0}
+ .region-heading>div{padding:20px 20px 24px;order:1}
+ .region-heading h2{font-size:34px;margin:8px 0}.region-heading p{font-size:17px}
+ .region-road{top:12px;right:12px}
+ .region-place-list{grid-template-columns:1fr;gap:24px;padding:22px 0 0}
+ .place-card{display:flex;flex-direction:column;align-items:stretch;gap:0}
+ .place-card-photo img{height:250px}.place-card-body{padding:13px 2px 0}
+ .place-card-body h3{font-size:24px}.place-card-body p{min-height:0;font-size:16px}
+ .place-detail{padding-top:20px}
+ .place-detail-hero{height:270px}
+ .place-detail-copy{margin-top:25px}
+ .place-facts{padding:18px 0}.place-facts h2{font-size:22px}.place-facts>p,.place-facts li{font-size:16px}
+ .place-itinerary-actions{grid-template-columns:1fr 1fr;gap:10px}
+ .place-itinerary-actions .field-label{grid-column:1/-1}
+ .place-itinerary-actions .button{width:100%;padding-inline:8px;font-size:15px}
+ .region-promo{width:90%;margin:0 auto 50px;padding:26px 7%;display:flex;flex-direction:column-reverse;gap:20px}
+ .region-promo img{height:245px}.region-promo h2{font-size:38px}.region-promo p{font-size:17px}
+ .trip-event{grid-template-columns:62px minmax(0,1fr);gap:11px}
+ .trip-event .event-content h3{font-size:21px}.trip-event .event-content>p{font-size:16px;flex-wrap:wrap}
+ .timeline-gap{gap:10px;padding-left:12px}.timeline-gap button{min-height:50px;font-size:16px}
+ .timeline-quick-menu{gap:8px;padding:12px}.timeline-quick-menu>button{flex:1 1 calc(50% - 8px);min-height:50px;font-size:16px}
+ .timeline-quick-menu>button:first-of-type{flex-basis:auto}
+ .timeline-empty{padding:25px 16px 20px}.timeline-empty h2{font-size:23px}.timeline-empty p{font-size:16px}
+ .trip-day-actions{width:100%}.trip-day-actions .button{flex:1}
+}
 .experience-fineprint{display:grid;grid-template-columns:1fr 1fr;gap:0 26px;margin:30px 0;border-block:1px solid var(--line)}
 .experience-fineprint section{padding:17px 0;border-bottom:1px solid var(--line)}
 .experience-fineprint section:nth-last-child(-n+2){border-bottom:0}
