@@ -9,5 +9,6 @@ import './styles/typography.css'
 import './styles/motion.css'
 import './styles/responsive.css'
 import './styles/home.css'
+import './styles/v2.css'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(<React.StrictMode><App /></React.StrictMode>)

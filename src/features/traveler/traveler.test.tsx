@@ -5,6 +5,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { AppStateProvider } from '../../store/AppStateProvider'
 import { FeedbackProvider } from '../../components/Feedback'
 import { resetStoreForTests } from '../../store/appStore'
+import { createInitialState } from '../../domain/fixtures'
 import { ExperienceDetailPage, BookingsPage } from './TravelerPages'
 
 function renderAt(path: string, page: React.ReactNode) {
@@ -33,12 +34,16 @@ describe('traveler booking flow', () => {
 
   it('cancels one booking with a reason and releases the party size', async () => {
     const user = userEvent.setup()
+    const seeded = createInitialState()
+    seeded.bookings.push({ id: 'booking-traveler-demo', sessionId: 'session-pomelo-1', experienceId: 'experience-1', travelerId: 'traveler-demo', partySize: 2, travelerCount: 2, status: 'pending', createdAt: '2026-10-10T10:00:00.000Z' })
+    localStorage.setItem('valley-freedom-state-v1', JSON.stringify(seeded))
+    resetStoreForTests()
     renderAt('/bookings', <BookingsPage />)
-    await user.click(screen.getAllByRole('button', { name: '取消預約' })[0])
+    await user.click(screen.getAllByRole('button', { name: '取消預約' }).at(-1)!)
     fireEvent.change(screen.getByLabelText('取消原因'), { target: { value: '需要改期' } })
     await user.click(screen.getByRole('button', { name: '確認取消' }))
-    await waitFor(() => expect(JSON.parse(localStorage.getItem('valley-freedom-state-v1')!).bookings.find((item: { id: string }) => item.id === 'booking-pending').status).toBe('cancelled'))
+    await waitFor(() => expect(JSON.parse(localStorage.getItem('valley-freedom-state-v1')!).bookings.find((item: { id: string }) => item.id === 'booking-traveler-demo').status).toBe('cancelled'))
     const state = JSON.parse(localStorage.getItem('valley-freedom-state-v1')!)
-    expect(state.bookings.find((item: { id: string }) => item.id === 'booking-pending')).toMatchObject({ cancelSource: 'traveler', cancelReason: '需要改期' })
+    expect(state.bookings.find((item: { id: string }) => item.id === 'booking-traveler-demo')).toMatchObject({ cancelSource: 'traveler', cancelReason: '需要改期' })
   })
 })

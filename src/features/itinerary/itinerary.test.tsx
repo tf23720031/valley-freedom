@@ -37,7 +37,8 @@ describe('itinerary draft UI', () => {
   it('keeps the experience entry point and adds a draft without submitting a reservation', async () => {
     const user = userEvent.setup()
     render(<AppStateProvider><FeedbackProvider><MemoryRouter initialEntries={['/itinerary']}><Routes><Route path="/itinerary" element={<ItineraryPage/>}/></Routes></MemoryRouter></FeedbackProvider></AppStateProvider>)
-    await user.click(screen.getAllByRole('button', { name: '加入行程' })[0])
+    await user.click(screen.getAllByRole('button', { name: '選人數並加入' })[0])
+    await user.click(screen.getByRole('button', { name: '以 1 人加入行程草稿' }))
     await waitFor(() => expect(JSON.parse(localStorage.getItem('valley-freedom-state-v1')!).itineraries[0].items).toHaveLength(1))
     const state = JSON.parse(localStorage.getItem('valley-freedom-state-v1')!)
     expect(state.bookings).toHaveLength(4)
@@ -54,7 +55,7 @@ describe('itinerary draft UI', () => {
     await user.type(screen.getByRole('spinbutton', { name: '行程停留分鐘數' }), '45')
     await waitFor(() => expect(screen.getByRole('spinbutton', { name: '行程停留分鐘數' })).toHaveValue(45))
     expect(screen.getByRole('dialog').textContent).toContain('09:30–10:15')
-    await user.click(screen.getByRole('button', { name: '以 45 分鐘加入行程' }))
+    await user.click(screen.getByRole('button', { name: '以 1 人加入行程草稿' }))
     await waitFor(() => expect(JSON.parse(localStorage.getItem('valley-freedom-state-v1')!).itineraries[0].items).toHaveLength(1))
     const item = JSON.parse(localStorage.getItem('valley-freedom-state-v1')!).itineraries[0].items[0]
     expect(item.kind).toBe('experience')

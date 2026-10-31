@@ -1,6 +1,8 @@
 import { expect, test } from '@playwright/test'
 
 test('three-day trip adds a time-slot companion inquiry and a coastal place as separate draft items', async ({ page }) => {
+  await page.goto('/login')
+  await page.getByRole('button', { name: '直接使用測試帳號' }).click()
   await page.goto('/itinerary')
   await page.getByLabel('第一天日期').fill('2026-11-14')
   await page.getByLabel('旅行天數').selectOption('3')

@@ -5,7 +5,8 @@ async function openMobileNav(page: import('@playwright/test').Page) {
 }
 
 test('publishes a co-created experience with its source draft still traceable', async ({ page }) => {
-  await page.goto('/')
+  await page.goto('/login')
+  await page.getByRole('button', { name: '直接使用測試帳號' }).click()
   await page.getByLabel('切換展示角色').selectOption('operator')
   await openMobileNav(page)
   await page.getByRole('link', { name: '新體驗共創', exact: true }).click()

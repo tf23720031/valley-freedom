@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { STORAGE_KEY, dispatch, getSnapshot, resetStoreForTests, setRole, subscribe } from './appStore'
+import { STORAGE_KEY, dispatch, getSnapshot, loginDemo, logoutDemo, resetStoreForTests, setRole, subscribe } from './appStore'
 import { createInitialState } from '../domain/fixtures'
 import { experiencePhotoSet } from '../domain/photoSources'
 
@@ -11,6 +11,17 @@ describe('shared LocalStorage application store', () => {
     expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).role).toBe('operator')
     resetStoreForTests()
     expect(getSnapshot().role).toBe('operator')
+  })
+
+  it('persists demo login and role selection, while logout preserves created data', () => {
+    loginDemo(true)
+    expect(getSnapshot()).toMatchObject({ authenticated: true, rememberLogin: true, role: 'traveler' })
+    setRole('operator')
+    dispatch((current) => ({ ok: true, value: { ...current, shopProfile: { ...current.shopProfile, contact: '展示聯絡方式' } } }))
+    logoutDemo()
+    expect(getSnapshot()).toMatchObject({ authenticated: false, role: 'operator', shopProfile: { contact: '展示聯絡方式' } })
+    resetStoreForTests()
+    expect(getSnapshot()).toMatchObject({ authenticated: false, role: 'operator', shopProfile: { contact: '展示聯絡方式' } })
   })
 
   it('notifies subscribers when another tab changes the shared storage key', () => {
@@ -59,7 +70,7 @@ describe('shared LocalStorage application store', () => {
     expect(migrated.role).toBe('companion')
     expect(migrated.bookings).toHaveLength(1)
     expect(migrated.companions.length).toBeGreaterThanOrEqual(3)
-    expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).schemaVersion).toBe(3)
+    expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).schemaVersion).toBe(4)
   })
 
   it('routes all updates through a result-returning dispatcher', () => {
