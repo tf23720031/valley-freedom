@@ -3,10 +3,15 @@ import { makeId } from './fixtures'
 
 export interface CompanionSearch { destination: string; date: string; startTime: string; durationMinutes: number; partySize: number; language: string; service: CompanionService; itineraryId?: string }
 export const estimateCompanionFee = (durationMinutes: number, ratePerHour: number) => Math.ceil(durationMinutes / 30) * ratePerHour / 2
-export function updateCompanionProfile(state: AppState, input: { companionId: string; avatar: string; bio: string; ratePerHour: number }): DomainResult<AppState> {
+export function updateCompanionProfile(state: AppState, input: { companionId: string; avatar: string; bio: string; ratePerHour: number; gender?: Companion['gender']; birthDate?: string; avatarImageKey?: string }): DomainResult<AppState> {
   const companion = state.companions.find((item) => item.id === input.companionId)
   if (!companion || !input.avatar.trim() || !input.bio.trim() || input.bio.trim().length > 100 || !Number.isFinite(input.ratePerHour) || input.ratePerHour <= 0) return { ok: false, error: { code: 'INVALID_COMPANION_PROFILE', message: '請填寫照片、100 字內介紹與有效時薪。' } }
-  return { ok: true, value: { ...state, companions: state.companions.map((item) => item.id === companion.id ? { ...item, avatar: input.avatar.trim(), bio: input.bio.trim(), ratePerHour: Math.round(input.ratePerHour) } : item) } }
+  if (input.birthDate) {
+    const birth = new Date(`${input.birthDate}T00:00:00`), today = new Date(); let age = today.getFullYear() - birth.getFullYear()
+    if (today.getMonth() < birth.getMonth() || (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate())) age -= 1
+    if (Number.isNaN(birth.getTime()) || birth > new Date(`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}T00:00:00`) || age < 20) return { ok: false, error: { code: 'INVALID_AGE', message: '在地旅伴須年滿 20 歲，且出生日期不可在未來。' } }
+  }
+  return { ok: true, value: { ...state, companions: state.companions.map((item) => item.id === companion.id ? { ...item, avatar: input.avatar.trim(), bio: input.bio.trim(), ratePerHour: Math.round(input.ratePerHour), ...(input.gender ? { gender: input.gender } : {}), ...(input.birthDate ? { birthDate: input.birthDate } : {}), avatarImageKey: input.avatarImageKey } : item) } }
 }
 const active = (status: ServiceRequestStatus) => ['pending', 'accepted', 'countered', 'confirmed'].includes(status)
 const mins = (time: string) => { const [h, m] = time.split(':').map(Number); return h * 60 + m }

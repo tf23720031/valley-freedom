@@ -1,4 +1,5 @@
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import { useEffect } from 'react'
 import { AppStateProvider } from '../store/AppStateProvider'
 import { FeedbackProvider } from '../components/Feedback'
 import { BrandShell } from '../components/BrandShell'
@@ -17,9 +18,10 @@ import { LoginPage } from '../features/auth/LoginPage'
 import { CompanionRequestsPage } from '../features/companions/CompanionRequestsPage'
 import { AdminOverviewPage } from '../features/admin/AdminOverviewPage'
 import { YouthPage } from '../features/youth/YouthPage'
+import { useOpenLoginModal } from '../components/LoginModalContext'
 
 function NotFound() { return <section className="empty-page"><span className="eyebrow">頁面不存在</span><h1>這段路還沒有安排。</h1><a className="button button-primary" href="/">回到首頁</a></section> }
-function RequireLogin({ children }: { children: React.ReactNode }) { const state = useAppState(), location = useLocation(); return state.authenticated ? children : <Navigate to="/login" replace state={{ from: location }} /> }
+function RequireLogin({ children }: { children: React.ReactNode }) { const state = useAppState(), location = useLocation(), open = useOpenLoginModal(); useEffect(() => { if (!state.authenticated) open(location.pathname + location.search) }, [state.authenticated, location.pathname, location.search, open]); return state.authenticated ? children : <section className="login-required-placeholder" aria-live="polite">登入後即可繼續這項操作。</section> }
 function AdminGrowthRoute() { return useAppState().role === 'admin' ? <PartnerGrowthPage /> : <Navigate to="/dashboard" replace /> }
 function RoleDashboard() { const role = useAppState().role; return <Navigate to={role === 'traveler' ? '/itinerary' : role === 'companion' ? '/companion' : role === 'operator' ? '/operator' : '/admin'} replace /> }
 export function App() {

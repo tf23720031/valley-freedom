@@ -1,9 +1,16 @@
 import { describe, expect, it } from 'vitest'
 import { createInitialState } from './fixtures'
 import { createServiceRequest } from './companions'
-import { recordPlaceStamp } from './routeRewards'
+import { recordPlaceStamp, recordPlaceStampWithPassword } from './routeRewards'
 
 describe('place route rewards', () => {
+  it('requires the demo venue password before adding a stamp', () => {
+    const state = createInitialState()
+    expect(recordPlaceStampWithPassword(state, 'muri-sunshine', 'wrong').ok).toBe(false)
+    const stamped = recordPlaceStampWithPassword(state, 'muri-sunshine', '555')
+    expect(stamped.ok).toBe(true)
+    if (stamped.ok) expect(stamped.value.placeStamps.map((stamp) => stamp.placeId)).toEqual(['muri-sunshine'])
+  })
   it('unlocks one NT$200 companion reward after two distinct place stamps', () => {
     const initial = createInitialState()
     const first = recordPlaceStamp(initial, 'muri-sunshine', '2026-11-01T08:00:00.000Z')

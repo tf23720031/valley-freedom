@@ -22,7 +22,7 @@ test('mobile companion search places the full-width photo above service informat
 })
 
 test('editorial pages stay within key widths from phone through desktop', async ({ page }) => {
-  for (const width of [390, 430, 768, 1024, 1440]) {
+  for (const width of [320, 375, 390, 430, 768, 1024, 1440]) {
     await page.setViewportSize({ width, height: 900 })
     for (const route of ['/', '/explore/taroko', '/itinerary', '/companions']) {
       await page.goto(route)
@@ -182,7 +182,7 @@ test('experience gallery follows the editorial sticky column on desktop and open
 test('every route fits phone, tablet and desktop widths', async ({ page }) => {
   test.setTimeout(120_000)
   const routes = ['/', '/experiences', '/experiences/experience-1', '/companions', '/explore', '/explore/taroko', '/places/muri-sunshine', '/companion', '/itinerary', '/bookings', '/muri-sunshine', '/youth', '/youth/tasks/demo', '/operator', '/operator/experiences', '/operator/bookings', '/operator/tasks', '/co-create', '/not-found']
-  for (const width of [390, 430, 768, 1024, 1440]) {
+  for (const width of [320, 375, 390, 430, 768, 1024, 1440]) {
     await page.setViewportSize({ width, height: 900 })
     for (const route of routes) {
       await page.goto(route, { waitUntil: 'domcontentloaded' })

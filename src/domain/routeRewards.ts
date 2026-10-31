@@ -1,6 +1,11 @@
 import type { AppState, DomainResult } from './types'
 
 const id = (prefix: string) => `${prefix}-${globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`}`
+export const DEMO_PLACE_STAMP_PASSWORD = '555'
+export function recordPlaceStampWithPassword(state: AppState, placeId: string, password: string, now = new Date().toISOString()): DomainResult<AppState> {
+  if (password !== DEMO_PLACE_STAMP_PASSWORD) return { ok: false, error: { code: 'password', message: '密碼不正確，請向店家詢問集章密碼。' } }
+  return recordPlaceStamp(state, placeId, now)
+}
 export function recordPlaceStamp(state: AppState, placeId: string, now = new Date().toISOString()): DomainResult<AppState> {
   if (!state.placeMetrics.some((place) => place.placeId === placeId)) return { ok: false, error: { code: 'missing', message: '找不到這個候選場域。' } }
   if (state.placeStamps.some((stamp) => stamp.placeId === placeId)) return { ok: false, error: { code: 'duplicate', message: '這個場域已在本裝置集過示意紀錄。' } }

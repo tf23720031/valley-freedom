@@ -1,8 +1,11 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowRight, MapPin, Route, Sparkles } from 'lucide-react'
 import { districts, getPlaceById, type Place } from '../../domain/districts'
 import { useAppState } from '../../store/AppStateProvider'
+import { dispatch } from '../../store/appStore'
+import { ConfirmDialog, useNotify } from '../../components/Feedback'
+import { recordPlaceStampWithPassword } from '../../domain/routeRewards'
 import { createProjectedPlaces, countyPath, fitTaiwanProjection, mainlandCounties, type TaiwanCountyCollection } from './mapGeometry'
 
 const MAP_WIDTH = 600
@@ -22,6 +25,11 @@ export function RouteMapPage() {
   const [mapError, setMapError] = useState(false)
   const [selectedId, setSelectedId] = useState('practice-song')
   const [area, setArea] = useState('瑞穗')
+  const [stampPassword, setStampPassword] = useState('')
+  const [stampOpen, setStampOpen] = useState(false)
+  const mapWrapRef = useRef<HTMLElement>(null)
+  const [mapHeight, setMapHeight] = useState<number>()
+  const notify = useNotify()
   const selected = getPlaceById(selectedId)
   const places = useMemo(() => districts.flatMap((region) => region.places), [])
   const projection = useMemo(() => countyData ? fitTaiwanProjection(countyData, MAP_WIDTH, MAP_HEIGHT) : null, [countyData])
@@ -56,11 +64,28 @@ export function RouteMapPage() {
     return () => controller.abort()
   }, [])
 
+  useEffect(() => {
+    const element = mapWrapRef.current
+    if (!element || typeof ResizeObserver === 'undefined') return
+    const observer = new ResizeObserver(([entry]) => setMapHeight(entry.contentRect.height))
+    observer.observe(element)
+    return () => observer.disconnect()
+  }, [])
+
+  const submitStamp = () => {
+    if (!selected) return
+    const result = dispatch((current) => recordPlaceStampWithPassword(current, selected.id, stampPassword))
+    if (!result.ok) { notify(result.error.message, 'error'); return }
+    setStampOpen(false)
+    setStampPassword('')
+    notify(`已收集「${selected.name}」示意章，目前共 ${result.value.placeStamps.length} 個場域。`, 'success')
+  }
+
   const selectedDirections = selected ? mapsDirections(selected) : undefined
   return <main className="route-map-page editorial-wrap">
     <header className="route-map-heading"><span className="eyebrow"><Route size={16}/> 沿著花東走 / 場域地圖</span><h1>順著海岸與縱谷，找到下一站。</h1><p>地圖只標出可核對的地點。候選名單不代表合作或可預約。</p></header>
-    <div className="route-map-layout">
-      <section className="taiwan-map-wrap" aria-label="臺灣本島縣市界線與花東候選場域地圖">
+    <div className="route-map-layout" style={mapHeight ? { '--map-panel-height': `${mapHeight}px` } as React.CSSProperties : undefined}>
+      <section ref={mapWrapRef} className="taiwan-map-wrap" aria-label="臺灣本島縣市界線與花東候選場域地圖">
         <div className="map-caption"><span>TAIWAN · EAST</span><b>花東候選場域</b><small>{projectedPlaces.length} 處位置已核對</small></div>
         {projection ? <svg className="taiwan-map-svg" viewBox={`0 0 ${MAP_WIDTH} ${MAP_HEIGHT}`} role="img" aria-label="依公開地理座標定位的花東候選場域">
           <g className="taiwan-county-shapes">
@@ -91,12 +116,13 @@ export function RouteMapPage() {
         {selected && <><span className="eyebrow">{selected.regionName} / 候選名單</span><h2>{selected.name}</h2><p>{selected.verifiedFacts[0] ?? '目前是候選參考名單；地點、活動與預約資訊尚待查證。'}</p><dl><div><dt>地址</dt><dd>{selected.address ?? '尚未查得可核對地址'}</dd></div><div><dt>座標</dt><dd>{selected.coordinates ? `${selected.coordinates.latitude.toFixed(6)}, ${selected.coordinates.longitude.toFixed(6)}${selected.coordinates.locationNote ? `；${selected.coordinates.locationNote}` : ''}` : '待確認，不顯示地圖標記'}</dd></div><div><dt>可確認服務</dt><dd>{selected.activityInfo[0] ?? '尚未查證，不推定提供體驗或服務'}</dd></div><div><dt>預約／合作</dt><dd>{selected.bookingChannel === 'public' ? '有公開預約資訊，請以業者公告為準' : '無可確認公開預約管道'}；尚未取得平台合作同意</dd></div></dl>
           {selectedDirections && <a className="text-link map-directions-link" href={selectedDirections} target="_blank" rel="noreferrer">{selected.coordinates ? 'Google Maps 導航' : 'Google Maps 搜尋'} <ArrowRight size={16}/></a>}
           <Link className="text-link" to={`/places/${selected.id}`}>查看場域資料 <ArrowRight size={16}/></Link></>}
-        {selected && <section className="map-source-list"><h3>資料來源</h3><ul>{selectedSources.map((source) => <li key={`${selected.id}-${source.url}`}><a href={source.url} target="_blank" rel="noreferrer">{source.label} <ArrowRight size={14}/></a></li>)}</ul></section>}
+        {selected && <><button className="button button-primary stamp-trigger" onClick={() => setStampOpen(true)} disabled={stamps.has(selected.id)}>{stamps.has(selected.id) ? '已收集此場域示意章' : '收集示意章'}</button><small className="stamp-demo-note">測試密碼機制，非安全驗證；請向店家詢問集章密碼。</small><section className="map-source-list"><h3>資料來源</h3><ul>{selectedSources.map((source) => <li key={`${selected.id}-${source.url}`}><a href={source.url} target="_blank" rel="noreferrer">{source.label} <ArrowRight size={14}/></a></li>)}</ul></section></>}
         <section className="unlocated-places" aria-labelledby="unlocated-heading"><h3 id="unlocated-heading">位置待確認</h3><p>未有足夠資料核對固定地點，因此不放置座標標記。</p><ul>{places.filter((place) => !place.coordinates).map((place) => <li key={place.id}><button onClick={() => setSelectedId(place.id)}><span>{place.regionName}</span><b>{place.name}</b><small>{place.address ?? '地址待查'}</small></button></li>)}</ul></section>
         <div className="nearby-box"><span className="eyebrow"><MapPin size={15}/> 沿線推薦</span><h3>同區場域</h3><label>目前規劃位置<select value={area} onChange={(event) => setArea(event.target.value)}><option>瑞穗</option><option>東海岸</option><option>太魯閣</option><option>南迴</option><option>花東全區</option></select></label><ul>{nearest.slice(0, 4).map((place) => <li key={place.id}><button onClick={() => setSelectedId(place.id)}><span>{place.regionName}</span><b>{place.name}</b><small>{place.coordinates ? '地圖座標已核對' : '位置待確認'}</small></button></li>)}</ul><small className="fine-print">依路線區域列出，不代表距離最近或實際交通時間。</small></div>
       </aside>
     </div>
-    <section className="route-reward-band"><div><span className="eyebrow"><Sparkles size={15}/> 路線集章展示</span><h2>走訪兩個場域，累積旅伴折抵。</h2><p>目前紀錄 {state.placeStamps.length} 個場域；達兩個後可取得 NT$200 旅伴服務折抵示意券。</p></div><div className="reward-count"><b>{Math.min(state.placeStamps.length, 2)}<small> / 2</small></b><span>已累積場域</span><Link className="button button-primary" to="/companions">找一位旅伴 <ArrowRight size={16}/></Link></div></section>
+    <section className="route-reward-band"><div><span className="eyebrow"><Sparkles size={15}/> 路線集章展示</span><h2>走訪兩個場域，累積旅伴折抵。</h2><p>目前紀錄 {state.placeStamps.length} 個場域；達兩個後可取得 NT$200 旅伴服務折抵示意券。</p><h3>我的集章紀錄</h3>{state.placeStamps.length ? <ul className="my-stamp-list">{state.placeStamps.map((stamp) => <li key={stamp.id}><b>{getPlaceById(stamp.placeId)?.name ?? stamp.placeId}</b><span>{new Date(stamp.stampedAt).toLocaleDateString('zh-TW')}・示意章</span></li>)}</ul> : <p>尚未收集，選擇場域並輸入店家密碼後即可留下紀錄。</p>}</div><div className="reward-count"><b>{Math.min(state.placeStamps.length, 2)}<small> / 2</small></b><span>已累積場域</span><Link className="button button-primary" to="/companions">找一位旅伴 <ArrowRight size={16}/></Link></div></section>
     <section className="route-benefit-note"><h2>場域資料狀態</h2><p>這是候選參考名單。地址、座標、活動與公開預約資訊分別依來源核對；尚未查證的資料會清楚標示，且全數場域皆未確認平台合作。</p><div><span>座標來源可追溯</span><span>未確認位置不放標記</span><span>加入行程不等於預約</span></div></section>
+    <ConfirmDialog open={stampOpen} title="收集場域示意章" description="請向店家詢問集章密碼。本原型所有店家共用測試密碼，不是安全驗證。" confirmLabel="驗證並集章" onCancel={() => { setStampOpen(false); setStampPassword('') }} onConfirm={submitStamp}><label className="field-label">店家密碼<input autoFocus type="password" inputMode="numeric" value={stampPassword} onChange={(event) => setStampPassword(event.target.value)} placeholder="請輸入店家提供的密碼"/></label><small>測試密碼：555</small></ConfirmDialog>
   </main>
 }

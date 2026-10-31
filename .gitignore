@@ -3,5 +3,6 @@ dist/
 .npm-cache/
 playwright-report/
 test-results/
+outputs/
 coverage/
 *.tsbuildinfo

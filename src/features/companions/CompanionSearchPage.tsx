@@ -7,6 +7,8 @@ import { createServiceRequest, estimateCompanionFee, matchingCompanions } from '
 import type { CompanionSearch } from '../../domain/companions'
 import type { CompanionService } from '../../domain/types'
 import { useNotify } from '../../components/Feedback'
+import { CompanionAvatar } from '../../components/CompanionAvatar'
+import { ageAt } from '../../domain/companionProfile'
 
 const labels: Record<CompanionService, string> = {
   companionship: '一般同行',
@@ -77,7 +79,7 @@ export function CompanionSearchPage() {
           <label className="field-label">開始時間<input type="time" value={query.startTime} onChange={(event) => update('startTime', event.target.value)}/></label>
           <label className="field-label">服務時長（分鐘）<input aria-label="服務時長（分鐘）" type="number" min="1" max="480" step="1" value={query.durationMinutes} onChange={(event) => update('durationMinutes', Number(event.target.value))}/></label>
         </div>
-        <p className="hourly-billing-note">服務費以 30 分鐘為一個計費單位，未滿 30 分鐘以 30 分鐘計費；例如 15 或 24 分鐘按 30 分鐘計，45、50 或 55 分鐘按 60 分鐘計。</p>
+        <p className="hourly-billing-note">服務費以 30 分鐘為一個計費單位，未滿 30 分鐘以 30 分鐘計費；例如 15 或 24 分鐘按 30 分鐘計，45、50 或 55 分鐘按 60 分鐘計。</p><p className="transport-reminder">與旅伴在選定地點集合，請自行備車。</p>
         <label className="field-label"><span>同行人數</span><input type="number" min="1" max="20" value={query.partySize} onChange={(event) => update('partySize', Number(event.target.value))}/></label>
         <label className="field-label"><span><Languages size={14}/>溝通語言</span><select value={query.language} onChange={(event) => update('language', event.target.value)}>{['中文', '英文', '日文'].map((value) => <option key={value}>{value}</option>)}</select></label>
         <label className="field-label"><span>陪同需求</span><select value={query.service} onChange={(event) => update('service', event.target.value as CompanionService)}>{Object.entries(labels).map(([key, value]) => <option value={key} key={key}>{value}</option>)}</select></label>
@@ -90,10 +92,10 @@ export function CompanionSearchPage() {
         <div className="results-heading"><div><span className="eyebrow">AVAILABLE PEOPLE / {query.date}</span><h2>符合條件的旅伴</h2></div><span>{people.length} 位可詢問</span></div>
         <p className="companion-demo-note">示意旅伴名單・人物、服務資訊與價格皆為虛擬資料</p>
         {people.length ? people.map((person) => <article className={`companion-result ${selected === person.id ? 'selected' : ''}`} key={person.id}>
-          <img src={person.avatar} alt={`${person.name}示意人物照片`}/>
+          <CompanionAvatar companionId={person.id} imageKey={person.avatarImageKey} src={person.avatar} alt={`${person.name}示意人物照片`}/>
           <div className="companion-result-main">
             <div className="person-heading"><div><span className="eyebrow">{person.serviceAreas.join('・')} / 示意旅伴</span><h3>{person.name}</h3></div><b>NT$ {person.ratePerHour}<small>／小時</small></b></div>
-            <p>{person.bio}</p>
+            <p>{person.bio}</p><small className="companion-public-demographics">{person.birthDate ? `${ageAt(person.birthDate)} 歲` : ''}{person.gender && person.gender !== 'undisclosed' ? `・${{male:'男',female:'女',other:'其他'}[person.gender]}` : ''}</small>
             <div className="result-qualifications"><span><Languages size={14}/>{person.languages.join('、')}</span><span><Clock3 size={14}/>{person.availability.filter((slot) => slot.date === query.date).map((slot) => `${slot.startTime}–${slot.endTime}`).join('、')}</span><span>{labels[query.service]}</span></div>
             <div className="companion-interests"><b>興趣與擅長</b><span>{person.interests?.join('、') || '尚未填寫'}</span></div>
             <div className="qualification-note"><b>相關訓練：</b>{person.qualifications.join('、') || '未提供'}<small>展示資訊尚未經平台實際查核</small></div>
