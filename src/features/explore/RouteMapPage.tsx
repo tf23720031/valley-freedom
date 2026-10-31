@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowRight, MapPin, Route, Sparkles } from 'lucide-react'
+import { ArrowRight, MapPin, Minus, Plus, RotateCcw, Route, Sparkles } from 'lucide-react'
 import { districts, getPlaceById, type Place } from '../../domain/districts'
 import { useAppState } from '../../store/AppStateProvider'
 import { dispatch } from '../../store/appStore'
 import { ConfirmDialog, useNotify } from '../../components/Feedback'
 import { recordPlaceStampWithPassword } from '../../domain/routeRewards'
-import { createProjectedPlaces, countyPath, fitTaiwanProjection, mainlandCounties, type TaiwanCountyCollection } from './mapGeometry'
+import { clusterProjectedPlaces, createProjectedPlaces, countyPath, fitTaiwanProjection, layoutMarkerLabels, mainlandCounties, type TaiwanCountyCollection } from './mapGeometry'
 
 const MAP_WIDTH = 600
 const MAP_HEIGHT = 760
@@ -27,8 +27,11 @@ export function RouteMapPage() {
   const [area, setArea] = useState('瑞穗')
   const [stampPassword, setStampPassword] = useState('')
   const [stampOpen, setStampOpen] = useState(false)
+  const [zoom, setZoom] = useState(1)
+  const [expandedClusters, setExpandedClusters] = useState<Set<string>>(() => new Set())
   const mapWrapRef = useRef<HTMLElement>(null)
   const [mapHeight, setMapHeight] = useState<number>()
+  const [mapWidth, setMapWidth] = useState<number>(MAP_WIDTH)
   const notify = useNotify()
   const selected = getPlaceById(selectedId)
   const places = useMemo(() => districts.flatMap((region) => region.places), [])
@@ -37,6 +40,15 @@ export function RouteMapPage() {
   const projectedPlaces = useMemo(() => countyData ? createProjectedPlaces(countyData, places.map((place) => ({
     id: place.id, name: place.name, longitude: place.coordinates?.longitude, latitude: place.coordinates?.latitude,
   })), MAP_WIDTH, MAP_HEIGHT) : [], [countyData, places])
+  const markerScale = MAP_WIDTH / mapWidth
+  const mapItems = useMemo(() => clusterProjectedPlaces(projectedPlaces, 42 * markerScale / zoom, expandedClusters), [projectedPlaces, markerScale, zoom, expandedClusters])
+  const individualPlaces = useMemo(() => layoutMarkerLabels(
+    mapItems.flatMap((item) => item.kind === 'place' ? [item.place] : []),
+    MAP_WIDTH,
+    MAP_HEIGHT,
+    42 * markerScale / zoom,
+  ), [mapItems, markerScale, zoom])
+  const laidOutById = useMemo(() => new Map(individualPlaces.map((place) => [place.id, place])), [individualPlaces])
   const nearest = useMemo(() => {
     const sameRoute = districts.find((region) => region.name.includes(area) || (area === '東海岸' && region.id === 'coast-11') || (area === '太魯閣' && region.id === 'taroko') || (area === '南迴' && region.id === 'south-link'))
     return sameRoute?.places ?? (area === '花東全區' ? places : districts.find((region) => region.id === 'valley-9')?.places ?? [])
@@ -67,7 +79,10 @@ export function RouteMapPage() {
   useEffect(() => {
     const element = mapWrapRef.current
     if (!element || typeof ResizeObserver === 'undefined') return
-    const observer = new ResizeObserver(([entry]) => setMapHeight(entry.contentRect.height))
+    const observer = new ResizeObserver(([entry]) => {
+      setMapHeight(entry.contentRect.height)
+      setMapWidth(entry.contentRect.width)
+    })
     observer.observe(element)
     return () => observer.disconnect()
   }, [])
@@ -88,27 +103,50 @@ export function RouteMapPage() {
       <section ref={mapWrapRef} className="taiwan-map-wrap" aria-label="臺灣本島縣市界線與花東候選場域地圖">
         <div className="map-caption"><span>TAIWAN · EAST</span><b>花東候選場域</b><small>{projectedPlaces.length} 處位置已核對</small></div>
         {projection ? <svg className="taiwan-map-svg" viewBox={`0 0 ${MAP_WIDTH} ${MAP_HEIGHT}`} role="img" aria-label="依公開地理座標定位的花東候選場域">
-          <g className="taiwan-county-shapes">
-            {features.map((feature, index) => <path key={`${feature.properties?.COUNTYCODE ?? feature.properties?.COUNTYNAME ?? 'county'}-${index}`} d={countyPath(projection, feature) ?? undefined} />)}
-          </g>
-          <g className="map-place-markers">
-            {projectedPlaces.map((point) => {
-              const place = getPlaceById(point.id)
-              const number = places.findIndex((item) => item.id === point.id) + 1
-              const stamped = stamps.has(point.id)
-              return <g key={point.id} className={`map-place-marker ${selectedId === point.id ? 'is-selected' : ''} ${stamped ? 'is-stamped' : ''}`}>
-                <path className="map-leader-line" d={`M${point.anchorX},${point.anchorY} L${point.labelX},${point.labelY}`} />
-                <circle className="map-geo-anchor" cx={point.anchorX} cy={point.anchorY} r="3.5" />
-                <g className="map-pin-hit-area" role="button" tabIndex={0} aria-label={`查看第${number}處 ${point.name}${place?.address ? `，${place.address}` : ''}`} onClick={() => setSelectedId(point.id)} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setSelectedId(point.id) } }}>
-                  <circle className="map-pin-halo" cx={point.labelX} cy={point.labelY} r="18" />
-                  <circle className="map-pin-number" cx={point.labelX} cy={point.labelY} r="14" />
-                  <text className="map-pin-label" x={point.labelX} y={point.labelY + 4.5} textAnchor="middle">{String(number).padStart(2, '0')}</text>
-                  <title>{place?.name}｜{place?.address ?? '位置已核對'}</title>
+          <g transform={`translate(${MAP_WIDTH * (1 - zoom) / 2} ${MAP_HEIGHT * (1 - zoom) / 2}) scale(${zoom})`}>
+            <g className="taiwan-county-shapes">
+              {features.map((feature, index) => <path key={`${feature.properties?.COUNTYCODE ?? feature.properties?.COUNTYNAME ?? 'county'}-${index}`} d={countyPath(projection, feature) ?? undefined} />)}
+            </g>
+            <g className="map-place-markers">
+              {mapItems.map((item) => {
+                if (item.kind === 'cluster') {
+                  const containsSelected = item.places.some((place) => place.id === selectedId)
+                  const containsStamped = item.places.some((place) => stamps.has(place.id))
+                  const expand = () => {
+                    setExpandedClusters((current) => new Set(current).add(item.id))
+                    setSelectedId(item.places[0]!.id)
+                  }
+                  return <g key={item.id} className={`map-cluster ${containsSelected ? 'is-selected' : ''} ${containsStamped ? 'has-stamp' : ''}`} role="button" tabIndex={0} aria-label={`展開群聚，${item.places.length} 個場域`} onClick={expand} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); expand() } }}>
+                    <circle className="map-geo-anchor" cx={item.anchorX} cy={item.anchorY} r={3.5 * markerScale / zoom}/>
+                    <circle className="map-cluster-circle" cx={item.anchorX} cy={item.anchorY} r={17 * markerScale / zoom}/>
+                    <text className="map-cluster-count" x={item.anchorX} y={item.anchorY + 4 * markerScale / zoom} textAnchor="middle">{item.places.length}</text>
+                    <title>{item.places.map((place) => place.name).join('、')}</title>
+                  </g>
+                }
+                const point = laidOutById.get(item.id) ?? item.place
+                const place = getPlaceById(point.id)
+                const number = places.findIndex((entry) => entry.id === point.id) + 1
+                const stamped = stamps.has(point.id)
+                const markerSize = markerScale / zoom
+                return <g key={point.id} className={`map-place-marker ${selectedId === point.id ? 'is-selected' : ''} ${stamped ? 'is-stamped' : ''}`}>
+                  <path className="map-leader-line" d={`M${point.anchorX},${point.anchorY} L${point.labelX},${point.labelY}`} />
+                  <circle className="map-geo-anchor" cx={point.anchorX} cy={point.anchorY} r={3.5 * markerSize} />
+                  <g className="map-pin-hit-area" role="button" tabIndex={0} aria-label={`查看第${number}處 ${point.name}${place?.address ? `，${place.address}` : ''}`} onClick={() => setSelectedId(point.id)} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setSelectedId(point.id) } }}>
+                    <circle className="map-pin-halo" cx={point.labelX} cy={point.labelY} r={18 * markerSize} />
+                    <circle className="map-pin-number" cx={point.labelX} cy={point.labelY} r={14 * markerSize} />
+                    <text className="map-pin-label" x={point.labelX} y={point.labelY + 4.5 * markerSize} fontSize={9 * markerSize} textAnchor="middle">{String(number).padStart(2, '0')}</text>
+                    <title>{place?.name}｜{place?.address ?? '位置已核對'}</title>
+                  </g>
                 </g>
-              </g>
-            })}
+              })}
+            </g>
           </g>
         </svg> : <div className="map-loading" role="status">{mapError ? '縣市地圖資料暫時無法載入。' : '正在載入縣市地圖…'}</div>}
+        <div className="map-zoom-controls" role="group" aria-label="地圖縮放">
+          <button type="button" aria-label="放大地圖" onClick={() => setZoom((value) => Math.min(3, Number((value + 0.5).toFixed(1))))} disabled={zoom >= 3}><Plus size={20}/></button>
+          <button type="button" aria-label="縮小地圖" onClick={() => setZoom((value) => Math.max(1, Number((value - 0.5).toFixed(1))))} disabled={zoom <= 1}><Minus size={20}/></button>
+          <button type="button" aria-label="重設地圖視角" onClick={() => { setZoom(1); setExpandedClusters(new Set()) }}><RotateCcw size={17}/></button>
+        </div>
         <div className="map-legend"><span><i/>已核對位置</span><span><i className="stamped-dot"/>已集示意章</span></div>
         <small className="map-source-note">行政區資料：內政部國土測繪中心 2025 縣市界線（1140318），資料版本 2026-08-07.1，EPSG:4326；政府資料開放授權條款第 1 版。<a href={COUNTY_DATASET_URL} target="_blank" rel="noreferrer">資料版本</a> · <a href={COUNTY_GOVERNMENT_SOURCE} target="_blank" rel="noreferrer">原始資料說明</a></small>
       </section>

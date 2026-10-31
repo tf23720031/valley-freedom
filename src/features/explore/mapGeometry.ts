@@ -15,6 +15,80 @@ export interface ProjectedPlace extends MapPlaceCoordinate {
   labelY: number
 }
 
+export type MapPlaceRenderItem =
+  | { kind: 'place'; id: string; place: ProjectedPlace }
+  | { kind: 'cluster'; id: string; anchorX: number; anchorY: number; places: ProjectedPlace[] }
+
+export function clusterProjectedPlaces(
+  places: ProjectedPlace[],
+  maximumDistance: number,
+  expandedClusters: Set<string> = new Set(),
+): MapPlaceRenderItem[] {
+  const parents = places.map((_, index) => index)
+  const find = (index: number): number => {
+    if (parents[index] !== index) parents[index] = find(parents[index])
+    return parents[index]
+  }
+  const join = (left: number, right: number) => { parents[find(left)] = find(right) }
+  for (let left = 0; left < places.length; left += 1) {
+    for (let right = left + 1; right < places.length; right += 1) {
+      const a = places[left]
+      const b = places[right]
+      if (a && b && Math.hypot(a.anchorX - b.anchorX, a.anchorY - b.anchorY) < maximumDistance) join(left, right)
+    }
+  }
+  const groups = new Map<number, ProjectedPlace[]>()
+  places.forEach((place, index) => {
+    const root = find(index)
+    groups.set(root, [...(groups.get(root) ?? []), place])
+  })
+  return [...groups.values()].map((group) => {
+    if (group.length === 1) return { kind: 'place' as const, id: group[0]!.id, place: group[0]! }
+    const ids = group.map((place) => place.id).sort()
+    const id = `cluster:${ids.join('|')}`
+    if (expandedClusters.has(id)) return group.map((place) => ({ kind: 'place' as const, id: place.id, place }))
+    return {
+      kind: 'cluster' as const,
+      id,
+      anchorX: group.reduce((sum, place) => sum + place.anchorX, 0) / group.length,
+      anchorY: group.reduce((sum, place) => sum + place.anchorY, 0) / group.length,
+      places: group,
+    }
+  }).flat()
+}
+
+function segmentsCross(a: ProjectedPlace, b: ProjectedPlace): boolean {
+  const orient = (ax: number, ay: number, bx: number, by: number, cx: number, cy: number) => (bx - ax) * (cy - ay) - (by - ay) * (cx - ax)
+  return orient(a.anchorX, a.anchorY, a.labelX, a.labelY, b.anchorX, b.anchorY) * orient(a.anchorX, a.anchorY, a.labelX, a.labelY, b.labelX, b.labelY) < 0
+    && orient(b.anchorX, b.anchorY, b.labelX, b.labelY, a.anchorX, a.anchorY) * orient(b.anchorX, b.anchorY, b.labelX, b.labelY, a.labelX, a.labelY) < 0
+}
+
+export function layoutMarkerLabels(places: ProjectedPlace[], width: number, height: number, minimumDistance = 40): ProjectedPlace[] {
+  const arranged: ProjectedPlace[] = []
+  const step = Math.max(6, minimumDistance / 2)
+  const angles = Array.from({ length: 24 }, (_, index) => index * Math.PI / 12)
+  return places.map((place) => {
+    let best: ProjectedPlace | undefined
+    let bestScore = Number.POSITIVE_INFINITY
+    for (let radius = minimumDistance / 2; radius <= Math.hypot(width, height); radius += step) {
+      for (const angle of angles) {
+        const x = place.anchorX + Math.cos(angle) * radius
+        const y = place.anchorY + Math.sin(angle) * radius
+        if (x < minimumDistance / 2 || x > width - minimumDistance / 2 || y < minimumDistance / 2 || y > height - minimumDistance / 2) continue
+        const candidate = { ...place, labelX: x, labelY: y }
+        if (arranged.some((other) => Math.hypot(x - other.labelX, y - other.labelY) < minimumDistance)) continue
+        const crossings = arranged.reduce((count, other) => count + Number(segmentsCross(candidate, other)), 0)
+        const score = radius + crossings * Math.max(width, height)
+        if (score < bestScore) { best = candidate; bestScore = score }
+      }
+      if (best && bestScore < radius + Math.max(width, height)) break
+    }
+    const result = best ?? { ...place, labelX: Math.max(0, Math.min(width, place.anchorX)), labelY: Math.max(0, Math.min(height, place.anchorY)) }
+    arranged.push(result)
+    return result
+  })
+}
+
 export interface TaiwanCountyProperties extends Record<string, unknown> {
   COUNTYNAME?: string
 }
@@ -38,21 +112,6 @@ export function mainlandCounties(collection: TaiwanCountyCollection): TaiwanCoun
 export function fitTaiwanProjection(collection: TaiwanCountyCollection, width: number, height: number): GeoProjection {
   const mainland = mainlandCounties(collection)
   return geoMercator().fitExtent([[18, 18], [Math.max(19, width - 18), Math.max(19, height - 18)]], mainland as GeoPermissibleObjects)
-}
-
-const directions = [
-  [1, -1], [1, 0], [1, 1], [-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1],
-]
-
-function labelPosition(anchorX: number, anchorY: number, width: number, height: number, occupied: Array<[number, number]>, offset = 28): [number, number] {
-  for (let radius = offset; radius <= 154; radius += 14) {
-    for (const [dx, dy] of directions) {
-      const x = Math.min(width - 18, Math.max(18, anchorX + dx * radius))
-      const y = Math.min(height - 18, Math.max(18, anchorY + dy * radius))
-      if (occupied.every(([otherX, otherY]) => Math.hypot(x - otherX, y - otherY) >= 39)) return [x, y]
-    }
-  }
-  return [Math.min(width - 18, Math.max(18, anchorX + offset)), Math.min(height - 18, Math.max(18, anchorY + offset))]
 }
 
 type Position = [number, number, ...number[]]
@@ -107,16 +166,14 @@ export function createProjectedPlaces(
 ): ProjectedPlace[] {
   if (width <= 0 || height <= 0) return []
   const projection = fitTaiwanProjection(counties, width, height)
-  const occupied: Array<[number, number]> = []
-  return places.flatMap((place) => {
+  const projectedPlaces = places.flatMap((place) => {
     if (!Number.isFinite(place.longitude) || !Number.isFinite(place.latitude)) return []
     const projected = projection([place.longitude as number, place.latitude as number])
     if (!projected) return []
     const [anchorX, anchorY] = projected
-    const [labelX, labelY] = labelPosition(anchorX, anchorY, width, height, occupied)
-    occupied.push([labelX, labelY])
-    return [{ ...place, anchorX, anchorY, labelX, labelY }]
+    return [{ ...place, anchorX, anchorY, labelX: anchorX, labelY: anchorY }]
   })
+  return layoutMarkerLabels(projectedPlaces, width, height, 40)
 }
 
 export function countyPath(projection: GeoProjection, feature: Feature<Geometry, TaiwanCountyProperties>): string | null | undefined {

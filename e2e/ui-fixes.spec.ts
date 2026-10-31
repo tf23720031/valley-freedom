@@ -102,6 +102,8 @@ test('route stamp requires the venue code and accumulates distinct places', asyn
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto('/explore/map')
   await expect(page.getByRole('button', { name: '收集示意章' })).toBeVisible()
+  const firstCluster = page.locator('.map-cluster').first()
+  if (await firstCluster.count()) await firstCluster.click()
   await page.getByRole('button', { name: '收集示意章' }).click()
   const dialog = page.getByRole('alertdialog', { name: '收集場域示意章' })
   await expect(dialog).toBeVisible()
@@ -116,4 +118,24 @@ test('route stamp requires the venue code and accumulates distinct places', asyn
   await page.reload()
   await expect(page.getByText('2 個場域；達兩個後')).toBeVisible()
   await expect(page.getByText('我的集章紀錄')).toBeVisible()
+})
+
+test('map clusters crowded places, expands them and zooms without mobile overflow', async ({ page }) => {
+  for (const width of [320, 375, 390, 430]) {
+    await page.setViewportSize({ width, height: 844 })
+    await page.goto('/explore/map')
+    const cluster = page.getByRole('button', { name: /展開群聚，\d+ 個場域/ }).first()
+    await expect(cluster).toBeVisible()
+    const groupSize = Number((await cluster.getAttribute('aria-label'))?.match(/\d+/)?.[0])
+    const markersBefore = await page.locator('.map-place-marker').count()
+    await cluster.click()
+    await expect(page.locator('.map-place-marker')).toHaveCount(markersBefore + groupSize)
+    await expect(page.getByRole('button', { name: '放大地圖' })).toBeVisible()
+    await page.getByRole('button', { name: '放大地圖' }).click()
+    await expect(page.getByRole('button', { name: '縮小地圖' })).toBeEnabled()
+    await page.getByRole('button', { name: '重設地圖視角' }).click()
+    const metrics = await page.evaluate(() => ({ document: document.documentElement.scrollWidth, viewport: document.documentElement.clientWidth, svg: document.querySelector('.taiwan-map-svg')!.getBoundingClientRect().width }))
+    expect(metrics.document).toBeLessThanOrEqual(metrics.viewport)
+    expect(metrics.svg).toBeGreaterThan(0)
+  }
 })
