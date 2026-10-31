@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { AppStateProvider } from '../../store/AppStateProvider'
@@ -10,9 +10,17 @@ import { ExperienceDetailPage, BookingsPage } from './TravelerPages'
 function renderAt(path: string, page: React.ReactNode) {
   return render(<AppStateProvider><FeedbackProvider><MemoryRouter initialEntries={[path]}><Routes><Route path="/experiences/:experienceId" element={page}/><Route path="/bookings" element={page}/></Routes></MemoryRouter></FeedbackProvider></AppStateProvider>)
 }
-beforeEach(() => { localStorage.clear(); resetStoreForTests() })
+beforeEach(() => { cleanup(); localStorage.clear(); resetStoreForTests() })
 
 describe('traveler booking flow', () => {
+  it('shows a date calendar with unavailable days disabled and explains companion seats', () => {
+    renderAt('/experiences/experience-1', <ExperienceDetailPage />)
+    expect(screen.getByRole('grid', { name: /選擇體驗日期/ })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /2026年11月14日.*有場次/ })).toBeEnabled()
+    expect(screen.getByRole('button', { name: /2026年11月13日.*無場次/ })).toBeDisabled()
+    expect(screen.getByText(/同行旅伴若參加活動，也占用一個名額/)).toBeInTheDocument()
+  })
+
   it('creates a pending booking from the experience detail and uses available seats', async () => {
     const user = userEvent.setup()
     renderAt('/experiences/experience-1', <ExperienceDetailPage />)

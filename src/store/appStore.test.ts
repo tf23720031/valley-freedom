@@ -39,6 +39,18 @@ describe('shared LocalStorage application store', () => {
     expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).experiences[0].image).toBe(experiencePhotoSet[0])
   })
 
+  it('adds newly seeded demo companions to existing schema v2 data without replacing user companions', () => {
+    const previous = createInitialState()
+    previous.companions = previous.companions.slice(0, 2)
+    previous.companions[0] = { ...previous.companions[0], bio: '使用者自訂介紹' }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(previous))
+    resetStoreForTests()
+    const migrated = getSnapshot()
+    expect(migrated.companions.map((person) => person.id)).toEqual(createInitialState().companions.map((person) => person.id))
+    expect(migrated.companions[0].bio).toBe('使用者自訂介紹')
+    expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).companions).toHaveLength(9)
+  })
+
   it('migrates the previous youth perspective to the companion role without losing bookings', () => {
     const previous = { ...createInitialState(), schemaVersion: 1, role: 'youth', bookings: [{ ...createInitialState().bookings[0] }] }
     localStorage.setItem(STORAGE_KEY, JSON.stringify(previous))
@@ -47,7 +59,7 @@ describe('shared LocalStorage application store', () => {
     expect(migrated.role).toBe('companion')
     expect(migrated.bookings).toHaveLength(1)
     expect(migrated.companions.length).toBeGreaterThanOrEqual(3)
-    expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).schemaVersion).toBe(2)
+    expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).schemaVersion).toBe(3)
   })
 
   it('routes all updates through a result-returning dispatcher', () => {

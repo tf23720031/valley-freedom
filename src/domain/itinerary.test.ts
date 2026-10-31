@@ -12,6 +12,12 @@ describe('itinerary editing', () => {
       expect(result.value.itineraries[0].items[0].kind).toBe('experience')
     }
   })
+  it('accepts a custom planned stay while keeping its source session', () => {
+    const state = createInitialState()
+    const result = addExperienceToItinerary(state, { travelerId: state.travelerId, experienceId: 'experience-1', sessionId: 'session-pomelo-1', date: '2026-11-14', durationMinutes: 45 })
+    expect(result.ok).toBe(true)
+    if (result.ok) expect(result.value.itineraries[0].items[0]).toMatchObject({ sessionId: 'session-pomelo-1', startTime: '09:30', endTime: '10:15' })
+  })
 
   it('accepts free activities without a provider session and calculates overlap and budget', () => {
     const state = createInitialState()

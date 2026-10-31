@@ -1,0 +1,31 @@
+:root {
+  --forest: #15525A;
+  --forest-dark: #0B343C;
+  --cream: #F2F8F7;
+  --paper: #FBFEFD;
+  --sage: #8BBFBA;
+  --sand: #DCEAE7;
+  --ink: #182D30;
+  --muted: #52676B;
+  --line: #C7D7D6;
+
+  --font-body: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+  --font-display: "Noto Sans TC", "Space Grotesk", "PingFang TC", "Microsoft JhengHei", sans-serif;
+  --font-latin: "Space Grotesk", "Arial", sans-serif;
+
+  --type-hero: clamp(3rem, 7vw, 7rem);
+  --type-section: clamp(2.25rem, 5vw, 4.75rem);
+  --type-card: clamp(1.5rem, 2.4vw, 2.25rem);
+  --content-width: 1440px;
+  --page-gutter: clamp(1.25rem, 5.7vw, 6.5rem);
+}
+
+html { background: var(--cream); color: var(--ink); }
+body { font-family: var(--font-body); font-size: 17px; }
+
+:focus-visible {
+  outline: 3px solid #3D8589;
+  outline-offset: 4px;
+}
+
+::selection { color: var(--cream); background: var(--forest); }

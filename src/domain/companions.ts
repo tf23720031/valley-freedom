@@ -2,14 +2,26 @@ import type { AppState, Companion, CompanionService, DomainResult, ServiceReques
 import { makeId } from './fixtures'
 
 export interface CompanionSearch { destination: string; date: string; startTime: string; durationMinutes: number; partySize: number; language: string; service: CompanionService; itineraryId?: string }
+export const estimateCompanionFee = (durationMinutes: number, ratePerHour: number) => Math.ceil(durationMinutes / 30) * ratePerHour / 2
+export function updateCompanionProfile(state: AppState, input: { companionId: string; avatar: string; bio: string; ratePerHour: number }): DomainResult<AppState> {
+  const companion = state.companions.find((item) => item.id === input.companionId)
+  if (!companion || !input.avatar.trim() || !input.bio.trim() || input.bio.trim().length > 100 || !Number.isFinite(input.ratePerHour) || input.ratePerHour <= 0) return { ok: false, error: { code: 'INVALID_COMPANION_PROFILE', message: '請填寫照片、100 字內介紹與有效時薪。' } }
+  return { ok: true, value: { ...state, companions: state.companions.map((item) => item.id === companion.id ? { ...item, avatar: input.avatar.trim(), bio: input.bio.trim(), ratePerHour: Math.round(input.ratePerHour) } : item) } }
+}
 const active = (status: ServiceRequestStatus) => ['pending', 'accepted', 'countered', 'confirmed'].includes(status)
 const mins = (time: string) => { const [h, m] = time.split(':').map(Number); return h * 60 + m }
 const overlaps = (aStart: string, aEnd: string, bStart: string, bEnd: string) => mins(aStart) < mins(bEnd) && mins(bStart) < mins(aEnd)
 export function matchingCompanions(state: AppState, query: CompanionSearch): Companion[] {
   const end = mins(query.startTime) + query.durationMinutes
-  if (!query.destination || !query.date || end > 24 * 60) return []
+  if (!query.destination || !query.date || query.durationMinutes < 1 || end > 24 * 60) return []
+  const regionalAreaTerms: Record<string, string[]> = {
+    花蓮縣: ['瑞穗', '舞鶴', '玉里', '富里', '光復', '花蓮', '太魯閣', '東海岸'],
+    臺東縣: ['臺東', '台東', '南迴', '太麻里', '大武'],
+  }
   return state.companions.filter((person) => {
-    const areaMatch = person.serviceAreas.some((area) => query.destination.includes(area) || area.includes(query.destination))
+    const regionalTerms = regionalAreaTerms[query.destination]
+    const areaMatch = query.destination === '花東全區'
+      || (regionalTerms ? person.serviceAreas.some((area) => regionalTerms.some((term) => area.includes(term))) : person.serviceAreas.some((area) => query.destination.includes(area) || area.includes(query.destination)))
     const slotMatch = person.availability.some((slot) => slot.date === query.date && mins(slot.startTime) <= mins(query.startTime) && mins(slot.endTime) >= end)
     const conflict = state.serviceRequests.some((request) => request.companionId === person.id && request.date === query.date && active(request.status) && overlaps(request.startTime, `${Math.floor((mins(request.startTime) + request.durationMinutes) / 60).toString().padStart(2, '0')}:${((mins(request.startTime) + request.durationMinutes) % 60).toString().padStart(2, '0')}`, query.startTime, `${Math.floor(end / 60).toString().padStart(2, '0')}:${(end % 60).toString().padStart(2, '0')}`))
     const itinerary = query.itineraryId ? state.itineraries.find((plan) => plan.id === query.itineraryId) : undefined
@@ -17,13 +29,16 @@ export function matchingCompanions(state: AppState, query: CompanionSearch): Com
     return areaMatch && slotMatch && person.services.includes(query.service) && person.languages.includes(query.language) && !conflict && !itineraryConflict
   })
 }
-export function createServiceRequest(state: AppState, input: CompanionSearch & { travelerId: string; companionId: string; meetingPoint: string; notes: string; itineraryId?: string }, now = new Date().toISOString()): DomainResult<AppState> {
-  if (!input.destination.trim() || !input.meetingPoint.trim() || input.durationMinutes < 30 || input.durationMinutes > 480 || input.partySize < 1 || input.partySize > 20) return fail('invalid', '請確認地點、人數與服務時長。')
+export function createServiceRequest(state: AppState, input: CompanionSearch & { travelerId: string; companionId: string; meetingPoint: string; notes: string; itineraryId?: string; rewardId?: string }, now = new Date().toISOString()): DomainResult<AppState> {
+  if (!input.destination.trim() || !input.meetingPoint.trim() || input.durationMinutes < 1 || input.durationMinutes > 480 || input.partySize < 1 || input.partySize > 20) return fail('invalid', '請確認地點、人數與服務時長。')
   const companion = state.companions.find((item) => item.id === input.companionId)
   if (!companion || !matchingCompanions(state, input).some((item) => item.id === companion.id)) return fail('unavailable', '這位旅伴目前不符合條件或時段已被占用，請重新搜尋。')
-  const price = Math.ceil(input.durationMinutes / 60 * companion.ratePerHour)
-  const request: ServiceRequest = { id: makeId('request'), travelerId: input.travelerId, companionId: companion.id, itineraryId: input.itineraryId, status: 'pending', destination: input.destination, meetingPoint: input.meetingPoint, date: input.date, startTime: input.startTime, durationMinutes: input.durationMinutes, partySize: input.partySize, language: input.language, service: input.service, notes: input.notes, price, createdAt: now, updatedAt: now }
-  return { ok: true, value: { ...state, serviceRequests: [...state.serviceRequests, request] }, valueId: request.id }
+  const price = estimateCompanionFee(input.durationMinutes, companion.ratePerHour)
+  const reward = input.rewardId ? state.routeRewards.find((item) => item.id === input.rewardId && item.status === 'available') : undefined
+  if (input.rewardId && !reward) return fail('reward', '這張路線折抵已使用或不存在，請重新整理後確認。')
+  const request: ServiceRequest = { id: makeId('request'), travelerId: input.travelerId, companionId: companion.id, itineraryId: input.itineraryId, status: 'pending', destination: input.destination, meetingPoint: input.meetingPoint, date: input.date, startTime: input.startTime, durationMinutes: input.durationMinutes, partySize: input.partySize, language: input.language, service: input.service, notes: input.notes, price, discountAmount: reward ? Math.min(reward.amount, price) : 0, rewardId: reward?.id, createdAt: now, updatedAt: now }
+  const routeRewards = reward ? state.routeRewards.map((item) => item.id === reward.id ? { ...item, status: 'redeemed' as const, redeemedRequestId: request.id } : item) : state.routeRewards
+  return { ok: true, value: { ...state, routeRewards, serviceRequests: [...state.serviceRequests, request] }, valueId: request.id }
 }
 export function companionRespond(state: AppState, input: { requestId: string; companionId: string; action: 'accept' | 'reject' | 'counter'; note?: string; startTime?: string; durationMinutes?: number; price?: number }, now = new Date().toISOString()): DomainResult<AppState> {
   const request = state.serviceRequests.find((item) => item.id === input.requestId && item.companionId === input.companionId)
@@ -33,7 +48,7 @@ export function companionRespond(state: AppState, input: { requestId: string; co
   else if (input.action === 'accept') next = { ...request, status: 'accepted', updatedAt: now }
   else {
     const startTime = input.startTime ?? request.startTime, durationMinutes = input.durationMinutes ?? request.durationMinutes
-    if (durationMinutes < 30 || durationMinutes > 480 || !isAvailable(state, request, startTime, durationMinutes)) return fail('conflict', '提出的時段不在可服務時間內或與其他需求重疊。')
+    if (durationMinutes < 1 || durationMinutes > 480 || !isAvailable(state, request, startTime, durationMinutes)) return fail('conflict', '提出的時段不在可服務時間內或與其他需求重疊。')
     next = { ...request, status: 'countered', proposed: { startTime, durationMinutes, price: input.price ?? request.price, note: input.note ?? '' }, updatedAt: now }
   }
   return replace(state, next)
@@ -55,7 +70,7 @@ export function travelerFinalizeRequest(state: AppState, input: { requestId: str
   const endMinutes = mins(confirmed.startTime) + confirmed.durationMinutes
   const endTime = `${Math.floor(endMinutes / 60).toString().padStart(2, '0')}:${(endMinutes % 60).toString().padStart(2, '0')}`
   if (itinerary.items.some((existing) => existing.date === confirmed.date && mins(existing.startTime) < endMinutes && mins(confirmed.startTime) < mins(existing.endTime))) return fail('conflict', '旅程草稿中已有重疊安排，請調整後再確認服務。')
-  const item = { id: `itinerary-${request.id}`, kind: 'companion' as const, serviceRequestId: request.id, title: `在地旅伴・${companion.name}`, category: '在地旅伴', place: request.meetingPoint, date: request.date, startTime: confirmed.startTime, endTime, price: confirmed.price, note: '已確認的旅伴服務；請由預約管理變更或取消。' }
+  const item = { id: `itinerary-${request.id}`, kind: 'companion' as const, serviceRequestId: request.id, title: `在地旅伴・${companion.name}`, category: '在地旅伴', place: request.meetingPoint, date: request.date, startTime: confirmed.startTime, endTime, price: Math.max(0, confirmed.price - (request.discountAmount ?? 0)), note: request.discountAmount ? `已確認服務，含 NT$${request.discountAmount} 路線折抵示意。` : '已確認的旅伴服務；請由預約管理變更或取消。' }
   const updatedPlan = { ...itinerary, endDate: request.date > (itinerary.endDate ?? itinerary.date) ? request.date : itinerary.endDate, dayCount: Math.max(itinerary.dayCount ?? 1, Math.ceil((Date.parse(`${request.date}T00:00:00Z`) - Date.parse(`${itinerary.date}T00:00:00Z`)) / 86400000) + 1), items: [...itinerary.items.filter((old) => old.serviceRequestId !== request.id), item].sort((a, b) => a.date.localeCompare(b.date) || a.startTime.localeCompare(b.startTime)), updatedAt: confirmed.updatedAt }
   return { ok: true, value: { ...state, serviceRequests: state.serviceRequests.map((item) => item.id === request.id ? confirmed : item), itineraries: itineraries.map((plan) => plan.id === updatedPlan.id ? updatedPlan : plan) } }
 }

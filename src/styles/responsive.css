@@ -1,0 +1,32 @@
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body, #root { min-width: 320px; max-width: 100%; }
+body { overflow-x: clip; }
+.site-header { position: sticky; top: 0; z-index: 80; }
+.mobile-menu-toggle { flex: 0 0 36px; width: 36px; height: 40px; }
+img, video, canvas, svg { max-width: 100%; }
+button, a, input, select, textarea { touch-action: manipulation; }
+button, a { -webkit-tap-highlight-color: transparent; }
+
+@media (max-width: 1050px) {
+  :root { --page-gutter: clamp(1.2rem, 4vw, 2.75rem); }
+  .site-header { gap: 1rem; }
+  .primary-nav { gap: 0.85rem; }
+}
+
+@media (max-width: 760px) {
+  .site-header { position: sticky; top: 0; z-index: 80; gap: 8px; padding-inline: 16px; }
+  .brand-lockup { gap: 8px; }
+  .brand-copy b { font-size: 13px; letter-spacing: .06em; }
+  .brand-copy small { font-size: 10px; letter-spacing: .14em; }
+  .mobile-menu-toggle { flex: 0 0 32px; width: 32px; height: 36px; padding: 4px; }
+  .header-tools { flex: 0 0 auto; gap: 5px; }
+  .role-select-label select { width: 64px; min-width: 0; padding: 0 10px 0 0; font-size: 12px; }
+  .reset-button { flex: 0 0 22px; width: 22px; height: 28px; justify-content: center; padding: 4px; }
+  .mobile-menu-toggle { flex: 0 0 36px; width: 36px; height: 40px; }
+  .primary-nav.is-open { max-height: calc(100dvh - 7rem); overflow-y: auto; }
+  .demo-strip { line-height: 1.5; }
+  .editorial-wrap { width: calc(100% - 2.5rem); }
+  .operator-tabs { flex-wrap: wrap; overflow: visible; }
+  .site-footer { row-gap: 0.5rem; }
+}

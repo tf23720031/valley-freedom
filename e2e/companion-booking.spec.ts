@@ -11,7 +11,7 @@ test('three-day trip adds a time-slot companion inquiry and a coastal place as s
   await expect(page.getByRole('heading', { name: '林雨禾' })).toBeVisible()
   await page.getByRole('button', { name: '提出預約需求' }).first().click()
   await page.getByRole('button', { name: '送出預約需求' }).click()
-  await expect(page.getByText('待旅伴回覆')).toBeVisible()
+  await expect(page.locator('.toast')).toContainText('等待旅伴回覆')
   await page.getByLabel('切換展示角色').selectOption('companion')
   await page.goto('/companion')
   await expect(page.getByRole('heading', { name: '在地旅伴工作台' })).toBeVisible()

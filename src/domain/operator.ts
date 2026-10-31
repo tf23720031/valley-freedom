@@ -2,15 +2,15 @@ import { createId } from './ids'
 import type { AppState, DomainResult, Experience, Session, Task } from './types'
 import { photos } from './photoSources'
 
-export function createExperience(state: AppState, input: { title: string; category: string; description: string; price: number; durationMinutes: number; location: string; now: string }): DomainResult<AppState> {
+export function createExperience(state: AppState, input: { title: string; category: string; description: string; price: number; durationMinutes: number; location: string; image?: string; now: string }): DomainResult<AppState> {
   if (!input.title.trim() || !input.description.trim() || input.price < 0 || input.durationMinutes < 15) return { ok: false, error: { code: 'INVALID_EXPERIENCE', message: '請確認名稱、介紹、價格與體驗時間。' } }
-  const experience: Experience = { id: createId('experience'), title: input.title.trim(), category: input.category, description: input.description.trim(), price: input.price, durationMinutes: input.durationMinutes, location: input.location.trim() || '花蓮縣瑞穗鄉', meetingPoint: input.location.trim() || '木日光文旦驛站入口', image: photos.garden, tags: [input.category], published: true, isDemo: true }
+  const experience: Experience = { id: createId('experience'), title: input.title.trim(), category: input.category, description: input.description.trim(), price: input.price, durationMinutes: input.durationMinutes, location: input.location.trim() || '花蓮縣瑞穗鄉', meetingPoint: input.location.trim() || '木日光文旦驛站入口', image: input.image?.trim() || photos.garden, tags: [input.category], published: true, isDemo: true }
   return { ok: true, value: { ...state, experiences: [...state.experiences, experience] }, valueId: experience.id }
 }
-export function updateExperience(state: AppState, input: { experienceId: string; title: string; description: string; price: number; durationMinutes: number; location: string }): DomainResult<AppState> {
+export function updateExperience(state: AppState, input: { experienceId: string; title: string; description: string; price: number; durationMinutes: number; location: string; image?: string }): DomainResult<AppState> {
   const current = state.experiences.find((item) => item.id === input.experienceId)
   if (!current || !input.title.trim() || !input.description.trim() || input.price < 0 || input.durationMinutes < 15) return { ok: false, error: { code: 'INVALID_EXPERIENCE', message: '請確認體驗名稱、介紹、價格與時長。' } }
-  return { ok: true, value: { ...state, experiences: state.experiences.map((item) => item.id === current.id ? { ...item, title: input.title.trim(), description: input.description.trim(), price: input.price, durationMinutes: input.durationMinutes, location: input.location.trim() || item.location, meetingPoint: input.location.trim() || item.meetingPoint } : item) } }
+  return { ok: true, value: { ...state, experiences: state.experiences.map((item) => item.id === current.id ? { ...item, title: input.title.trim(), description: input.description.trim(), price: input.price, durationMinutes: input.durationMinutes, location: input.location.trim() || item.location, meetingPoint: input.location.trim() || item.meetingPoint, image: input.image?.trim() || item.image } : item) } }
 }
 export function createSession(state: AppState, input: { experienceId: string; date: string; startTime: string; endTime: string; capacity: number }): DomainResult<AppState> {
   if (!state.experiences.some((item) => item.id === input.experienceId && item.published) || !input.date || input.startTime >= input.endTime || !Number.isInteger(input.capacity) || input.capacity < 1) return { ok: false, error: { code: 'INVALID_SESSION', message: '請確認體驗、日期、時間及可預約名額。' } }

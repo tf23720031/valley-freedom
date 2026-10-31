@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { AppStateProvider } from '../store/AppStateProvider'
 import { FeedbackProvider } from '../components/Feedback'
 import { BrandShell } from '../components/BrandShell'
@@ -10,8 +10,12 @@ import { CocreationPage } from '../features/cocreation/CocreationPage'
 import { CompanionSearchPage } from '../features/companions/CompanionSearchPage'
 import { CompanionPage } from '../features/companions/CompanionPage'
 import { RegionalExplorePage } from '../features/explore/RegionalExplorePage'
+import { RouteMapPage } from '../features/explore/RouteMapPage'
+import { PartnerGrowthPage } from '../features/operator/PartnerGrowthPage'
+import { useAppState } from '../store/AppStateProvider'
 
 function NotFound() { return <section className="empty-page"><span className="eyebrow">頁面不存在</span><h1>這段路還沒有安排。</h1><a className="button button-primary" href="/">回到首頁</a></section> }
+function AdminGrowthRoute() { return useAppState().role === 'admin' ? <PartnerGrowthPage /> : <Navigate to="/" replace /> }
 export function App() {
   return <AppStateProvider><FeedbackProvider><BrowserRouter><Routes><Route element={<BrandShell />}>
     <Route path="/" element={<HomePage />} />
@@ -19,6 +23,7 @@ export function App() {
     <Route path="/experiences/:experienceId" element={<ExperienceDetailPage />} />
     <Route path="/companions" element={<CompanionSearchPage />} />
     <Route path="/explore" element={<RegionalExplorePage />} />
+    <Route path="/explore/map" element={<RouteMapPage />} />
     <Route path="/explore/:regionId" element={<RegionalExplorePage />} />
     <Route path="/places/:placeId" element={<RegionalExplorePage />} />
     <Route path="/companion" element={<CompanionPage />} />
@@ -31,6 +36,8 @@ export function App() {
     <Route path="/operator/experiences" element={<OperatorPage />} />
     <Route path="/operator/bookings" element={<OperatorPage />} />
     <Route path="/operator/tasks" element={<OperatorPage />} />
+    <Route path="/admin/growth" element={<AdminGrowthRoute />} />
+    <Route path="/operator/growth" element={<AdminGrowthRoute />} />
     <Route path="/co-create" element={<CocreationPage />} />
     <Route path="*" element={<NotFound />} />
   </Route></Routes></BrowserRouter></FeedbackProvider></AppStateProvider>

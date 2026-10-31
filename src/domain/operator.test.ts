@@ -23,4 +23,11 @@ describe('operator catalog management', () => {
     expect(capacity.ok).toBe(false)
     if (!capacity.ok) expect(capacity.error.code).toBe('CAPACITY_BELOW_BOOKED')
   })
+
+  it('updates an experience photo without changing its published record', () => {
+    const state = createInitialState()
+    const result = updateExperience(state, { experienceId: 'experience-1', title: '果園季節筆記', description: '更新後的活動介紹。', price: 700, durationMinutes: 100, location: '木日光', image: 'https://images.example.test/pomelo.jpg' })
+    expect(result.ok).toBe(true)
+    if (result.ok) expect(result.value.experiences[0]).toMatchObject({ image: 'https://images.example.test/pomelo.jpg', published: true })
+  })
 })

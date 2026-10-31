@@ -1,0 +1,40 @@
+:where(h1, h2, h3, h4) {
+  font-family: var(--font-display);
+  font-weight: 900;
+  letter-spacing: -0.045em;
+  text-wrap: balance;
+}
+
+:where(.home-editorial, .regional-explore, .place-detail) h1 {
+  font-size: var(--type-hero);
+  line-height: 1.02;
+}
+
+:where(.home-editorial, .regional-explore, .place-detail) h2 {
+  font-size: var(--type-section);
+  line-height: 1.08;
+}
+
+.eyebrow, .section-overline {
+  letter-spacing: 0.08em;
+  text-transform: none;
+  font-weight: 650;
+}
+
+.button, button { font-family: var(--font-body); }
+
+.button { min-height: 48px; font-weight: 700; letter-spacing: 0; }
+
+.site-footer, .demo-strip, .page-section, .editorial-wrap {
+  font-family: var(--font-body);
+}
+
+@media (max-width: 760px) {
+  body { font-size: 16px; }
+  :where(.home-editorial, .regional-explore, .place-detail) h1 {
+    font-size: clamp(2.7rem, 12vw, 4.5rem);
+  }
+  :where(.home-editorial, .regional-explore, .place-detail) h2 {
+    font-size: clamp(2.2rem, 9vw, 3.7rem);
+  }
+}

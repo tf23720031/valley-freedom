@@ -1,4 +1,4 @@
-export type Role = 'traveler' | 'companion' | 'operator'
+export type Role = 'traveler' | 'companion' | 'operator' | 'admin'
 export type BookingStatus = 'pending' | 'confirmed' | 'cancelled' | 'completed'
 export type CancelSource = 'traveler' | 'operator'
 export type TaskApplicationStatus = 'pending' | 'accepted' | 'rejected' | 'completed' | 'cancelled'
@@ -13,8 +13,8 @@ export interface Itinerary { id: string; travelerId: string; title: string; date
 export type CompanionService = 'companionship' | 'event-support' | 'language-support' | 'local-information'
 export type ServiceRequestStatus = 'pending' | 'accepted' | 'countered' | 'confirmed' | 'rejected' | 'cancelled' | 'completed'
 export interface CompanionAvailability { id: string; date: string; startTime: string; endTime: string }
-export interface Companion { id: string; name: string; avatar: string; bio: string; serviceAreas: string[]; languages: string[]; services: CompanionService[]; qualifications: string[]; restrictions: string[]; ratePerHour: number; availability: CompanionAvailability[]; demo: true }
-export interface ServiceRequest { id: string; travelerId: string; companionId: string; itineraryId?: string; status: ServiceRequestStatus; destination: string; meetingPoint: string; date: string; startTime: string; durationMinutes: number; partySize: number; language: string; service: CompanionService; notes: string; price: number; proposed?: { startTime: string; durationMinutes: number; price: number; note: string }; decisionNote?: string; cancelReason?: string; cancelSource?: 'traveler' | 'companion'; createdAt: string; updatedAt: string }
+export interface Companion { id: string; name: string; avatar: string; bio: string; serviceAreas: string[]; languages: string[]; services: CompanionService[]; qualifications: string[]; restrictions: string[]; interests?: string[]; ratePerHour: number; availability: CompanionAvailability[]; demo: true }
+export interface ServiceRequest { id: string; travelerId: string; companionId: string; itineraryId?: string; status: ServiceRequestStatus; destination: string; meetingPoint: string; date: string; startTime: string; durationMinutes: number; partySize: number; language: string; service: CompanionService; notes: string; price: number; discountAmount?: number; rewardId?: string; proposed?: { startTime: string; durationMinutes: number; price: number; note: string }; decisionNote?: string; cancelReason?: string; cancelSource?: 'traveler' | 'companion'; createdAt: string; updatedAt: string }
 export interface Task { id: string; title: string; category: string; description: string; date: string; startTime: string; endTime: string; hours: number; pay: number; slots: number; eligible: boolean; location: string }
 export interface TaskApplication { id: string; taskId: string; youthId: string; status: TaskApplicationStatus; appliedAt: string }
 export interface Resource { id: string; name: string; type: ResourceType; description: string; partner: string; availability: string }
@@ -22,5 +22,11 @@ export interface ExperienceDraft { id: string; title: string; resourceIds: strin
 export interface PilotSession { id: string; draftId: string; date: string; capacity: number; label: '試辦' }
 export interface Feedback { id: string; draftId: string; author: string; rating: number; text: string }
 export interface ChangeLogEntry { id: string; draftId: string; actorId: string; at: string; note: string }
-export interface AppState { schemaVersion: 2; role: Role; travelerId: string; youthId: string; companionId: string; experiences: Experience[]; sessions: Session[]; bookings: Booking[]; itineraries: Itinerary[]; companions: Companion[]; serviceRequests: ServiceRequest[]; tasks: Task[]; applications: TaskApplication[]; resources: Resource[]; drafts: ExperienceDraft[]; pilotSessions: PilotSession[]; feedback: Feedback[]; changeLog: ChangeLogEntry[] }
+export interface PlaceStamp { id: string; placeId: string; stampedAt: string; mode: 'demo' }
+export interface PlaceRating { id: string; placeId: string; rating: number; createdAt: string }
+export interface RouteReward { id: string; kind: 'companion-200'; amount: 200; status: 'available' | 'redeemed'; stampIds: string[]; createdAt: string; redeemedRequestId?: string }
+export interface PartnerLink { id: string; anchorPlaceId: string; smallPlaceId: string; offerType: 'coupon' | 'add-on' | 'bundle'; description: string; active: boolean }
+export interface SubsidyRecord { id: string; placeId: string; month: string; amount: number; description: string }
+export interface PlaceMetric { placeId: string; size: 'small' | 'large'; lastMonthVisits: number; thisMonthVisits: number; views: number; qrScans: number; conversions: number; monthlySubsidyLimit: number }
+export interface AppState { schemaVersion: 3; role: Role; travelerId: string; youthId: string; companionId: string; experiences: Experience[]; sessions: Session[]; bookings: Booking[]; itineraries: Itinerary[]; companions: Companion[]; serviceRequests: ServiceRequest[]; tasks: Task[]; applications: TaskApplication[]; resources: Resource[]; drafts: ExperienceDraft[]; pilotSessions: PilotSession[]; feedback: Feedback[]; changeLog: ChangeLogEntry[]; placeStamps: PlaceStamp[]; placeRatings: PlaceRating[]; routeRewards: RouteReward[]; partnerLinks: PartnerLink[]; subsidies: SubsidyRecord[]; placeMetrics: PlaceMetric[] }
 export type DomainResult<T> = { ok: true; value: T; valueId?: string } | { ok: false; error: { code: string; message: string } }

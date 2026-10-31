@@ -19,6 +19,8 @@ describe('regional exploration', () => {
     for (const name of ['練習曲', '大竹子走部落', '成功海銀行', '新太平洋一號店', '眺港咖啡', 'Liay 里艾廚房', '晉領號', '竹湖山居', '木日光文旦驛站', '笙笙不息', '米粒如福', '卡那歲工坊', 'inapayan 青年工作站', '故火工作室', '達興山號', '藤你的樣子', '捌個零社企']) expect(screen.getByRole('heading', { name })).toBeInTheDocument()
     expect(screen.getByText(/不代表平台已合作/)).toBeInTheDocument()
     expect(screen.getAllByText(/氛圍參考照・非場域實景/).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/規劃示意/).length).toBeGreaterThanOrEqual(4)
+    expect(screen.getByText(/大眾運輸與自駕接駁/)).toBeInTheDocument()
   })
 
   it('adds a candidate place to the selected date as a draft and leaves bookings untouched', async () => {

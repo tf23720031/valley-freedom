@@ -4,13 +4,18 @@ import type { AppState, DomainResult, Itinerary, ItineraryItem } from './types'
 export function getOrCreateItinerary(state: AppState, travelerId: string, date: string): Itinerary {
   return state.itineraries.find((item) => item.travelerId === travelerId && item.date === date) ?? { id: createId('itinerary'), travelerId, title: '我的縱谷日常', date, budget: 3000, interests: [], items: [], updatedAt: new Date().toISOString() }
 }
-export function addExperienceToItinerary(state: AppState, input: { travelerId: string; experienceId: string; sessionId: string; date: string }): DomainResult<AppState> {
+export function addExperienceToItinerary(state: AppState, input: { travelerId: string; experienceId: string; sessionId: string; date: string; durationMinutes?: number }): DomainResult<AppState> {
   const experience = state.experiences.find((item) => item.id === input.experienceId && item.published)
   const session = state.sessions.find((item) => item.id === input.sessionId && !item.pilot)
   if (!experience || !session || session.experienceId !== experience.id) return { ok: false, error: { code: 'INVALID_ITEM', message: '這項體驗目前無法加入行程。' } }
+  const durationMinutes = input.durationMinutes ?? (Number(session.endTime.slice(0, 2)) * 60 + Number(session.endTime.slice(3)) - Number(session.startTime.slice(0, 2)) * 60 - Number(session.startTime.slice(3)))
+  const startMinutes = Number(session.startTime.slice(0, 2)) * 60 + Number(session.startTime.slice(3))
+  if (!Number.isFinite(durationMinutes) || durationMinutes < 15 || durationMinutes > 720 || startMinutes + durationMinutes > 1440) return { ok: false, error: { code: 'INVALID_DURATION', message: '請輸入 15 至 720 分鐘內、且不超過午夜的停留時間。' } }
   const itinerary = getOrCreateItinerary(state, input.travelerId, input.date)
   if (itinerary.items.some((item) => item.sessionId === session.id)) return { ok: false, error: { code: 'DUPLICATE_ITEM', message: '這個場次已在行程中。' } }
-  const item: ItineraryItem = { id: createId('itinerary-item'), kind: 'experience', experienceId: experience.id, sessionId: session.id, title: experience.title, date: session.date, startTime: session.startTime, endTime: session.endTime, price: experience.price }
+  const endMinutes = startMinutes + durationMinutes
+  const endTime = `${String(Math.floor(endMinutes / 60)).padStart(2, '0')}:${String(endMinutes % 60).padStart(2, '0')}`
+  const item: ItineraryItem = { id: createId('itinerary-item'), kind: 'experience', experienceId: experience.id, sessionId: session.id, title: experience.title, date: session.date, startTime: session.startTime, endTime, price: experience.price }
   return { ok: true, value: { ...state, itineraries: [...state.itineraries.filter((existing) => existing.id !== itinerary.id), { ...itinerary, items: [...itinerary.items, item], updatedAt: new Date().toISOString() }] } }
 }
 export function addFreeActivity(state: AppState, input: { travelerId: string; title: string; date: string; startTime: string; endTime: string; price?: number }): DomainResult<AppState> {
