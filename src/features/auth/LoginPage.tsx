@@ -1,40 +1,24 @@
-import { useEffect, useRef, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { Eye, EyeOff, X } from 'lucide-react'
 import { useAppState } from '../../store/AppStateProvider'
 import { loginDemo } from '../../store/appStore'
 import { useNotify } from '../../components/Feedback'
 import { useOpenLoginModal } from '../../components/LoginModalContext'
+import { useDialogBehavior } from '../../components/useDialogBehavior'
 
 export function LoginPage() {
   const open = useOpenLoginModal()
   const location = useLocation()
-  useEffect(() => { open(location.pathname === '/login' ? undefined : location.pathname) }, [open, location.pathname])
-  return null
+  const state = useAppState()
+  useEffect(() => { if (!state.authenticated) open(location.pathname === '/login' ? undefined : location.pathname) }, [open, location.pathname, state.authenticated])
+  return state.authenticated ? <Navigate to="/dashboard" replace /> : null
 }
 
 export function LoginModal({ open, returnTo, onClose }: { open: boolean; returnTo: string; onClose: () => void }) {
   const state = useAppState(), notify = useNotify(), navigate = useNavigate()
   const [email, setEmail] = useState(''), [password, setPassword] = useState(''), [showPassword, setShowPassword] = useState(false), [remember, setRemember] = useState(true)
-  const dialog = useRef<HTMLElement>(null)
-  const close = useRef(onClose); close.current = onClose
-  useEffect(() => {
-    if (!open) return
-    const previous = document.activeElement as HTMLElement | null
-    const overflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    const focusables = () => Array.from(dialog.current?.querySelectorAll<HTMLElement>('button:not([disabled]),input:not([disabled]),a[href],[tabindex]:not([tabindex="-1"])') ?? [])
-    focusables()[0]?.focus()
-    const key = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') { event.preventDefault(); close.current(); return }
-      if (event.key !== 'Tab') return
-      const items = focusables(); if (!items.length) return
-      if (event.shiftKey && document.activeElement === items[0]) { event.preventDefault(); items.at(-1)?.focus() }
-      else if (!event.shiftKey && document.activeElement === items.at(-1)) { event.preventDefault(); items[0].focus() }
-    }
-    document.addEventListener('keydown', key)
-    return () => { document.removeEventListener('keydown', key); document.body.style.overflow = overflow; previous?.focus() }
-  }, [open])
+  const dialog = useDialogBehavior(open, onClose)
   if (!open || state.authenticated) return null
   const enter = () => {
     loginDemo(remember)

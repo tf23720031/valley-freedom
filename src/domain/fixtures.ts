@@ -12,6 +12,17 @@ const experienceSeed: Array<[string, string, string, number, number]> = [
   ['老屋裡的地方記憶', '聚落走讀', '從器物與照片拼起聚落生活片段。', 80, 380],
   ['縱谷晨光攝影散步', '自然觀察', '用慢速步行捕捉山線和水田的晨間光影。', 90, 0],
 ]
+const companionPortraits: Record<string, string> = {
+  'companion-lin': 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=720&h=720&q=88',
+  'companion-chen': 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=720&h=720&q=88',
+  'companion-wu': 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=720&h=720&q=88',
+  'companion-huang': 'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&w=720&h=720&q=88',
+  'companion-zhao': 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=720&h=720&q=88',
+  'companion-lin-yi': 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=720&h=720&q=88',
+  'companion-yang': 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=720&h=720&q=88',
+  'companion-lin-taitung': 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=720&h=720&q=88',
+  'companion-hsu-south': 'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=720&h=720&q=88',
+}
 export function createInitialState(): AppState {
   const experiences: Experience[] = experienceSeed.map(([title, category, description, durationMinutes, price], index) => ({
     id: `experience-${index + 1}`, title, category, description, location: index % 2 ? '花蓮縣瑞穗鄉' : '木日光文旦驛站', meetingPoint: '木日光文旦驛站入口', durationMinutes, price,
@@ -28,7 +39,7 @@ export function createInitialState(): AppState {
     { id: 'companion-yang', name: '楊柏翰', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=600&h=700&q=85&sat=-40', bio: '長住花蓮南區，熟悉火車轉乘與小鎮生活，可協助旅客釐清移動安排。', serviceAreas: ['瑞穗', '玉里', '富里'], languages: ['中文', '英文'], services: ['companionship', 'language-support', 'local-information'], qualifications: ['旅客服務訓練（示意）'], restrictions: ['不代訂交通、不提供載客接送或專業導覽'], interests: ['火車旅行', '小鎮散步', '地方選物'], ratePerHour: 900, availability: [{ id: 'slot-yang-1', date: '2026-11-15', startTime: '13:00', endTime: '19:00' }], demo: true },
     { id: 'companion-lin-taitung', name: '林知夏', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&h=700&q=85', bio: '在臺東市參與地方活動企劃，熟悉市區步行路線、交通轉乘與小店。', serviceAreas: ['臺東市', '卑南', '知本'], languages: ['中文', '英文'], services: ['companionship', 'language-support', 'local-information'], qualifications: ['地方活動接待研習（示意）'], restrictions: ['不提供專業導覽、載客接送或高風險活動'], interests: ['地方市集', '咖啡店', '鐵道旅行'], ratePerHour: 950, availability: [{ id: 'slot-lin-taitung-1', date: '2026-11-15', startTime: '10:00', endTime: '18:00' }], demo: true },
     { id: 'companion-hsu-south', name: '許柏勳', avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=600&h=700&q=85&sat=-25', bio: '熟悉太麻里到大武一帶的補給點與火車班次，可協助安排一般同行。', serviceAreas: ['太麻里', '大武', '南迴'], languages: ['中文', '英文'], services: ['companionship', 'language-support', 'local-information'], qualifications: ['旅客服務基礎訓練（示意）'], restrictions: ['不提供登山帶隊、載客接送或專業導覽'], interests: ['海岸散步', '火車旅行', '在地食堂'], ratePerHour: 850, availability: [{ id: 'slot-hsu-south-1', date: '2026-11-15', startTime: '10:00', endTime: '18:00' }], demo: true },
-  ].map((person, index) => ({ ...person, gender: index % 3 === 0 ? 'female' as const : index % 3 === 1 ? 'male' as const : 'undisclosed' as const, birthDate: `${1986 + index}-06-15` })) as Companion[]
+  ].map((person, index) => ({ ...person, avatar: companionPortraits[person.id] ?? person.avatar, gender: index % 3 === 0 ? 'female' as const : index % 3 === 1 ? 'male' as const : 'undisclosed' as const, birthDate: `${1986 + index}-06-15` })) as Companion[]
   return {
     schemaVersion: 4, authenticated: false, rememberLogin: false, role: 'traveler' as Role, travelerId: 'traveler-demo', youthId: 'youth-demo', companionId: 'companion-lin', experiences, sessions, bookings: [
       { id: 'booking-pending', sessionId: 'session-pomelo-1', experienceId: 'experience-1', travelerId: 'traveler-seed', partySize: 2, travelerCount: 2, status: 'pending', createdAt: '2026-10-10T10:00:00.000Z' },

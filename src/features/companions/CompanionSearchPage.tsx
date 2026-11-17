@@ -9,6 +9,7 @@ import type { CompanionService } from '../../domain/types'
 import { useNotify } from '../../components/Feedback'
 import { CompanionAvatar } from '../../components/CompanionAvatar'
 import { ageAt } from '../../domain/companionProfile'
+import { useDialogBehavior } from '../../components/useDialogBehavior'
 
 const labels: Record<CompanionService, string> = {
   companionship: '一般同行',
@@ -64,6 +65,7 @@ export function CompanionSearchPage() {
   }
 
   const selectedPerson = state.companions.find((person) => person.id === selected)
+  const requestDialog = useDialogBehavior<HTMLFormElement>(modal && Boolean(selectedPerson), () => setModal(false))
   const estimate = selectedPerson ? estimateCompanionFee(query.durationMinutes, selectedPerson.ratePerHour) : 0
   const availableRewards = state.routeRewards.filter((reward) => reward.status === 'available')
   const appliedDiscount = availableRewards.find((reward) => reward.id === rewardId)?.amount ?? 0
@@ -106,8 +108,8 @@ export function CompanionSearchPage() {
       </div>
     </div>
     {modal && selectedPerson && <div className="modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setModal(false) }}>
-      <form className="request-modal" onSubmit={send}>
-        <button type="button" className="modal-close" onClick={() => setModal(false)} aria-label="關閉">×</button><span className="eyebrow">REQUEST TO BOOK / DEMO</span><h2>提出旅伴預約需求</h2><p>{selectedPerson.name}・{query.date}・{query.startTime}・{query.durationMinutes} 分鐘</p>
+      <form ref={requestDialog} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="request-modal-title" className="request-modal" onSubmit={send}>
+        <button type="button" className="modal-close" onClick={() => setModal(false)} aria-label="關閉">×</button><span className="eyebrow">REQUEST TO BOOK / DEMO</span><h2 id="request-modal-title">提出旅伴預約需求</h2><p>{selectedPerson.name}・{query.date}・{query.startTime}・{query.durationMinutes} 分鐘</p>
         <label className="field-label">集合位置<input required value={meeting} placeholder="請填寫實際集合位置" onChange={(event) => { setMeeting(event.target.value); setMeetingEdited(true) }}/></label>
         <label className="field-label">補充需求<textarea value={notes} onChange={(event) => setNotes(event.target.value)} placeholder="例如：希望先協助確認餐廳是否適合素食。" rows={4}/></label>
         {availableRewards.length > 0 && <label className="field-label">路線集章折抵<select value={rewardId} onChange={(event) => setRewardId(event.target.value)}><option value="">不使用折抵</option>{availableRewards.map((reward) => <option key={reward.id} value={reward.id}>NT${reward.amount} 折抵示意</option>)}</select></label>}

@@ -150,7 +150,7 @@ export function RouteMapPage() {
         <div className="map-legend"><span><i/>已核對位置</span><span><i className="stamped-dot"/>已集示意章</span></div>
         <small className="map-source-note">行政區資料：內政部國土測繪中心 2025 縣市界線（1140318），資料版本 2026-08-07.1，EPSG:4326；政府資料開放授權條款第 1 版。<a href={COUNTY_DATASET_URL} target="_blank" rel="noreferrer">資料版本</a> · <a href={COUNTY_GOVERNMENT_SOURCE} target="_blank" rel="noreferrer">原始資料說明</a></small>
       </section>
-      <aside className="map-place-panel">
+      <aside className="map-place-panel" tabIndex={0} aria-label="場域資料與沿線推薦，可在此區域捲動">
         {selected && <><span className="eyebrow">{selected.regionName} / 候選名單</span><h2>{selected.name}</h2><p>{selected.verifiedFacts[0] ?? '目前是候選參考名單；地點、活動與預約資訊尚待查證。'}</p><dl><div><dt>地址</dt><dd>{selected.address ?? '尚未查得可核對地址'}</dd></div><div><dt>座標</dt><dd>{selected.coordinates ? `${selected.coordinates.latitude.toFixed(6)}, ${selected.coordinates.longitude.toFixed(6)}${selected.coordinates.locationNote ? `；${selected.coordinates.locationNote}` : ''}` : '待確認，不顯示地圖標記'}</dd></div><div><dt>可確認服務</dt><dd>{selected.activityInfo[0] ?? '尚未查證，不推定提供體驗或服務'}</dd></div><div><dt>預約／合作</dt><dd>{selected.bookingChannel === 'public' ? '有公開預約資訊，請以業者公告為準' : '無可確認公開預約管道'}；尚未取得平台合作同意</dd></div></dl>
           {selectedDirections && <a className="text-link map-directions-link" href={selectedDirections} target="_blank" rel="noreferrer">{selected.coordinates ? 'Google Maps 導航' : 'Google Maps 搜尋'} <ArrowRight size={16}/></a>}
           <Link className="text-link" to={`/places/${selected.id}`}>查看場域資料 <ArrowRight size={16}/></Link></>}

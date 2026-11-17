@@ -5,6 +5,7 @@ import { useAppState } from '../../store/AppStateProvider'
 import { districts, type RegionId } from '../../domain/districts'
 import { useHomeScrollStory } from '../../components/motion/useHomeScrollStory'
 import { useHomeSectionReveals } from '../../components/motion/useHomeSectionReveals'
+import { useDialogBehavior } from '../../components/useDialogBehavior'
 
 const regionImages: Record<RegionId, string> = {
   taroko: '/photos/valley-trail.webp',
@@ -33,6 +34,7 @@ export function HomePage() {
   const [activeSlide, setActiveSlide] = useState(0)
   const [activeExperienceId, setActiveExperienceId] = useState('')
   const [mobileExperience, setMobileExperience] = useState<(typeof state.experiences)[number] | null>(null)
+  const experiencePreviewDialog = useDialogBehavior(Boolean(mobileExperience), () => setMobileExperience(null))
   const experiences = state.experiences.filter((experience) => experience.published).slice(0, 4)
   const activeExperience = experiences.find((experience) => experience.id === activeExperienceId) ?? experiences[0]
   const companions = state.companions.slice(0, 1)
@@ -139,7 +141,7 @@ export function HomePage() {
         </div>
       </div>
       {mobileExperience && <div className="experience-preview-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setMobileExperience(null) }}>
-        <section className="experience-preview-modal" role="dialog" aria-modal="true" aria-labelledby="experience-preview-title" aria-label={mobileExperience.title}>
+        <section ref={experiencePreviewDialog} tabIndex={-1} className="experience-preview-modal" role="dialog" aria-modal="true" aria-labelledby="experience-preview-title" aria-label={mobileExperience.title}>
           <button className="experience-preview-close" type="button" aria-label="關閉介紹" onClick={() => setMobileExperience(null)}><X size={20} /></button>
           <img src={mobileExperience.image} alt={`${mobileExperience.title}的示意照片`} />
           <div className="experience-preview-copy"><span>{mobileExperience.category}／{mobileExperience.location}・示意資料</span><h2 id="experience-preview-title">{mobileExperience.title}</h2><p>{mobileExperience.description}</p><div><span><Clock3 size={15} /> 建議停留 {mobileExperience.durationMinutes} 分鐘</span><b>NT$ {mobileExperience.price.toLocaleString()} <small>費用示意</small></b></div><Link className="button button-primary" to={`/experiences/${mobileExperience.id}`}>前往體驗詳情 <ArrowUpRight size={16} /></Link></div>

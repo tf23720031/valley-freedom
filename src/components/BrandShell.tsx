@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { ArrowUpRight, Menu, RotateCcw, X } from 'lucide-react'
 import { useAppState } from '../store/AppStateProvider'
@@ -28,13 +28,23 @@ export function BrandShell() {
   const [loginReturnTo, setLoginReturnTo] = useState('/dashboard')
   const openLogin = useCallback((returnTo?: string) => { setLoginReturnTo(returnTo ?? '/dashboard'); setLoginOpen(true) }, [])
   const closeLogin = useCallback(() => { setLoginOpen(false); if (location.pathname === '/login') navigate('/') }, [location.pathname, navigate])
+  useEffect(() => {
+    if (!menuOpen) return
+    const closeOnEscape = (event: KeyboardEvent) => { if (event.key === 'Escape') setMenuOpen(false) }
+    document.addEventListener('keydown', closeOnEscape)
+    return () => document.removeEventListener('keydown', closeOnEscape)
+  }, [menuOpen])
   const warning = getStoreWarning()
-  return <LoginModalContext.Provider value={openLogin}><div className="site-frame">
+  return <LoginModalContext.Provider value={openLogin}><div className="site-frame" data-authenticated={state.authenticated ? 'true' : 'false'} data-role={state.role}>
     <ScrollProgress />
+    <a className="skip-link" href="#main-content">跳至主要內容</a>
     <header className="site-header">
       <Link to="/" className="brand-lockup" onClick={() => setMenuOpen(false)} aria-label="縱谷自由行動所首頁"><span className="brand-emblem" aria-hidden="true"><span /></span><span className="brand-copy"><b>縱谷自由行動所</b><small>VALLEY FREEDOM</small></span></Link>
-      <button className="mobile-menu-toggle" aria-label={menuOpen ? '關閉導覽' : '開啟導覽'} aria-expanded={menuOpen} onClick={() => setMenuOpen((open) => !open)}>{menuOpen ? <X /> : <Menu />}</button>
-      <nav className={`primary-nav ${menuOpen ? 'is-open' : ''}`} aria-label="主要導覽">{links[state.role].filter(([href]) => state.authenticated || !['/itinerary','/bookings','/companion','/companions/requests','/operator','/operator/experiences','/operator/bookings','/operator/tasks','/operator/shop','/co-create','/admin','/admin/growth'].includes(href)).map(([href, label]) => <NavLink key={href} to={href} onClick={() => setMenuOpen(false)} className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>{label}</NavLink>)}</nav>
+      <button className="mobile-menu-toggle" aria-label={menuOpen ? '關閉導覽' : '開啟導覽'} aria-controls="primary-navigation" aria-expanded={menuOpen} onClick={() => setMenuOpen((open) => !open)}>{menuOpen ? <X /> : <Menu />}</button>
+      <nav id="primary-navigation" className={`primary-nav ${menuOpen ? 'is-open' : ''}`} aria-label="主要導覽">{links[state.role].filter(([href]) => state.authenticated || !['/itinerary','/bookings','/companion','/companions/requests','/operator','/operator/experiences','/operator/bookings','/operator/tasks','/operator/shop','/co-create','/admin','/admin/growth'].includes(href)).map(([href, label]) => <NavLink key={href} to={href} onClick={() => setMenuOpen(false)} className={({ isActive }) => {
+        const routeActive = href === '/explore' ? location.pathname === '/explore' || (location.pathname.startsWith('/explore/') && location.pathname !== '/explore/map') : href === '/experiences' ? location.pathname.startsWith('/experiences') : href === '/companions' ? location.pathname === '/companions' : href === '/companions/requests' ? location.pathname === href : isActive
+        return routeActive ? 'nav-link active' : 'nav-link'
+      }}>{label}</NavLink>)}</nav>
       <div className="header-tools">{state.authenticated ? <><label className="role-select-label"><span>展示視角</span><select aria-label="切換展示角色" value={state.role} onChange={(event) => { const role = event.target.value as Role; setRole(role); notify(`已切換為${roleLabels[role]}視角`, 'info'); navigate(role === 'traveler' ? '/itinerary' : role === 'companion' ? '/companion' : role === 'operator' ? '/operator' : '/admin') }}>{Object.entries(roleLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label><button className="reset-button logout-button" onClick={() => { logoutDemo(); navigate('/'); notify('已登出展示帳號，示範資料保留。', 'info') }}>登出</button><button className="reset-button" onClick={() => setResetOpen(true)} aria-label="重置示範資料"><RotateCcw size={15} /><span>重置資料</span></button></> : <button className="button button-outline header-login" onClick={() => openLogin()}>登入</button>}</div>
     </header>
     {warning && <div className="storage-warning" role="status">{warning}</div>}

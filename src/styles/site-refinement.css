@@ -1,0 +1,210 @@
+/* Shared field-guide rhythm: one material system, with page-specific layouts kept intact. */
+:root {
+  --cream: #f3f7f3;
+  --paper: #fffefa;
+  --ink: #18383a;
+  --muted: #596d6b;
+  --line: #c6d5d0;
+  --forest: #15525a;
+  --forest-dark: #0b343c;
+  --sage: #8bbfba;
+  --sand: #e7ece3;
+  --field-glow: 0 0 0 3px rgb(21 82 90 / .12);
+}
+
+html { scroll-behavior: smooth; scroll-padding-top: 96px; }
+body { min-width: min(100vw, 280px); color: var(--ink); }
+button, a, input, select, textarea { touch-action: manipulation; }
+img { max-width: 100%; }
+.skip-link { position: fixed; z-index: 200; top: 10px; left: 10px; padding: 10px 14px; transform: translateY(-160%); color: white; background: var(--forest-dark); transition: transform var(--motion-quick) var(--ease-field); }
+.skip-link:focus { transform: translateY(0); }
+
+.site-header {
+  position: sticky;
+  top: 0;
+  background: rgb(243 247 243 / .94);
+  backdrop-filter: blur(16px);
+  border-bottom-color: rgb(21 82 90 / .16);
+  transition: box-shadow var(--motion-quick) var(--ease-field), background var(--motion-quick) var(--ease-field);
+}
+.site-header:has(.primary-nav.is-open) { background: var(--paper); box-shadow: 0 12px 34px rgb(11 52 60 / .09); }
+.brand-emblem { transition: transform 480ms var(--ease-field); }
+.brand-lockup:hover .brand-emblem { transform: rotate(-5deg) translateY(-1px); }
+.nav-link { transition: color var(--motion-quick) var(--ease-field); }
+.nav-link::after { height: 2px; transform-origin: left; transition: width 260ms var(--ease-field); }
+.nav-link.active { font-weight: 700; }
+.mobile-menu-toggle { min-width: 40px; min-height: 40px; border: 1px solid transparent; background: transparent; color: var(--forest-dark); cursor: pointer; }
+.mobile-menu-toggle:hover { background: var(--sand); border-color: var(--line); }
+.demo-strip { flex-wrap: wrap; line-height: 1.55; }
+
+.page-section, .detail-page, .place-page, .regional-page, .route-map-page,
+.companion-search-page, .companion-workbench, .multi-itinerary,
+.role-page, .operator-page, .co-creation-page, .admin-overview {
+  animation: field-page-in var(--motion-page) var(--ease-field) both;
+}
+@keyframes field-page-in {
+  from { opacity: .01; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.page-title-row {
+  gap: clamp(18px, 4vw, 56px);
+  border-bottom-color: rgb(21 82 90 / .2);
+}
+.page-title-row > div { min-width: 0; }
+.page-title-row h1, .detail-main > h1, .place-page-copy h1 { text-wrap: balance; }
+.page-title-row p { max-width: 56ch; }
+.page-count { flex-shrink: 0; }
+
+.button, .text-button, .filter-reset, .session-calendar-head button,
+.timeline-gap button, .trip-day-tabs button, .workbench-tabs button,
+.segmented button, .operator-tabs a, .operator-tabs button {
+  transition: color var(--motion-quick) var(--ease-field), background-color var(--motion-quick) var(--ease-field),
+    border-color var(--motion-quick) var(--ease-field), box-shadow var(--motion-quick) var(--ease-field),
+    transform var(--motion-quick) var(--ease-field);
+}
+.button { min-height: 46px; }
+.button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 18px rgb(11 52 60 / .12); }
+.button:active:not(:disabled) { transform: translateY(0) scale(.985); box-shadow: none; }
+.button-primary:hover:not(:disabled) { background: #0b4149; border-color: #0b4149; }
+.field-label { min-width: 0; line-height: 1.55; }
+.field-label input, .field-label select, .field-label textarea,
+.availability-form input, .availability-form select,
+.event-edit input, .event-edit select, .trip-form-grid input, .trip-form-grid select {
+  min-width: 0;
+  max-width: 100%;
+  transition: border-color var(--motion-quick) var(--ease-field), box-shadow var(--motion-quick) var(--ease-field), background-color var(--motion-quick) var(--ease-field);
+}
+.field-label input:focus, .field-label select:focus, .field-label textarea:focus,
+.availability-form input:focus, .availability-form select:focus,
+.event-edit input:focus, .event-edit select:focus {
+  border-color: #4b8583;
+  box-shadow: var(--field-glow);
+}
+input[type="checkbox"], input[type="radio"] { accent-color: var(--forest); }
+
+.filter-panel, .search-filter-panel, .trip-settings, .trip-summary,
+.booking-panel, .resource-form, .task-form, .draft-workspace,
+.experience-info-modal, .request-modal, .login-modal, .confirm-dialog,
+.experience-preview-modal {
+  border-color: rgb(21 82 90 / .2);
+  box-shadow: var(--paper-shadow);
+}
+.filter-panel, .search-filter-panel, .trip-settings, .resource-form,
+.task-form, .draft-workspace { background: #f4f6ef; }
+.trip-summary, .booking-panel { position: sticky; top: 110px; align-self: start; }
+.filter-panel, .search-filter-panel { top: 110px; }
+.trip-event, .booking-row, .request-row, .admin-shop-row, .operator-booking-row,
+.catalog-row, .task-row, .resource-card { transition: background-color 240ms var(--ease-field), border-color 240ms var(--ease-field), transform 240ms var(--ease-field); }
+.trip-event:hover, .booking-row:hover, .request-row:hover, .admin-shop-row:hover,
+.operator-booking-row:hover, .catalog-row:hover, .task-row:hover { background-color: rgb(255 254 250 / .7); }
+.session-option, .experience-option, .companion-result, .resource-card { min-width: 0; }
+.session-option:hover:not(.sold-out), .companion-result:hover { border-color: #789b90; }
+.session-option.selected, .companion-result.selected { box-shadow: inset 3px 0 0 var(--forest); }
+.status-pill { max-width: 100%; line-height: 1.45; white-space: normal; }
+.empty-state, .timeline-empty { isolation: isolate; }
+.empty-state p, .timeline-empty p { max-width: 56ch; }
+
+.scroll-progress { height: 2px; background: #4a8985; box-shadow: 0 0 8px rgb(74 137 133 / .48); }
+.route-transition { transform-origin: 50% 0; animation: route-arrive 460ms var(--ease-field) both; }
+[data-scroll-reveal="pending"] { opacity: 0; translate: 0 16px; transition: opacity 520ms var(--ease-field), translate 520ms var(--ease-field); transition-delay: calc(var(--reveal-order, 0) * 36ms); }
+[data-scroll-reveal="visible"] { opacity: 1; translate: 0 0; }
+@keyframes route-arrive {
+  from { opacity: .2; transform: translateY(9px); filter: blur(2px); }
+  to { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+
+.dialog-backdrop, .login-modal-backdrop, .experience-preview-backdrop, .experience-info-backdrop, .modal-backdrop {
+  padding: clamp(12px, 4vw, 32px);
+  background: rgb(5 30 34 / .7);
+  backdrop-filter: blur(9px) saturate(.82);
+  animation: veil-in 180ms ease-out both;
+}
+.confirm-dialog, .login-modal, .request-modal, .experience-preview-modal,
+.experience-info-modal {
+  width: min(100%, 680px);
+  max-width: 100%;
+  max-height: min(90dvh, 860px);
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  animation: modal-in 360ms var(--ease-field) both;
+}
+.confirm-dialog::-webkit-scrollbar, .login-modal::-webkit-scrollbar, .request-modal::-webkit-scrollbar,
+.experience-preview-modal::-webkit-scrollbar, .experience-info-modal::-webkit-scrollbar { display: none; }
+.confirm-dialog, .login-modal, .request-modal { padding: clamp(22px, 5vw, 42px); }
+.confirm-dialog h2, .login-modal h2, .request-modal h2 { text-wrap: balance; }
+.dialog-actions { gap: 10px; }
+.dialog-actions button { min-width: 112px; }
+@keyframes veil-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes modal-in { from { opacity: 0; transform: translateY(14px) scale(.99); } to { opacity: 1; transform: translateY(0) scale(1); } }
+
+.toast-region { max-width: min(440px, calc(100vw - 24px)); }
+.toast { overflow-wrap: anywhere; border-left-width: 3px; box-shadow: 0 14px 38px rgb(11 52 60 / .16); animation: toast-in 280ms var(--ease-field) both; }
+@keyframes toast-in { from { opacity: 0; transform: translate3d(14px, 8px, 0); } to { opacity: 1; transform: translate3d(0, 0, 0); } }
+
+@media (max-width: 760px) {
+  .page-title-row { align-items: flex-start; }
+  .trip-summary, .booking-panel, .filter-panel, .search-filter-panel { position: static; }
+  .experience-info-modal, .request-modal { max-height: 92dvh; }
+  .dialog-actions { align-items: stretch; }
+  .dialog-actions button { flex: 1 1 140px; }
+  .primary-nav.is-open .nav-link { min-height: 48px; }
+  .primary-nav.is-open { scrollbar-width: none; }
+  .primary-nav.is-open::-webkit-scrollbar { display: none; }
+}
+
+@media (max-width: 420px) {
+  html { scroll-padding-top: 72px; }
+  .site-header { flex-wrap: wrap; }
+  .header-tools { flex: 1 0 100%; justify-content: flex-end; border-left: 0; border-top: 1px solid var(--line); padding: 6px 0 0; margin-top: 4px; }
+  .role-select-label { flex-direction: row; align-items: center; gap: 5px; }
+  .role-select-label span { display: inline; font-size: 10px; letter-spacing: 0; }
+  .role-select-label select { width: auto; max-width: 102px; }
+  .reset-button, .reset-button:not(.logout-button) { width: auto; flex-basis: auto; min-width: 34px; min-height: 34px; }
+  .logout-button span, .reset-button:not(.logout-button) span { display: inline; }
+  .page-section { padding-top: 34px; }
+  .eyebrow { font-size: 11px; letter-spacing: .1em; overflow-wrap: anywhere; }
+  .page-title-row h1 { font-size: clamp(29px, 10vw, 38px); line-height: 1.25; }
+  .detail-main > h1, .place-page-copy h1 { font-size: clamp(30px, 10vw, 40px); overflow-wrap: anywhere; }
+  .trip-day-tabs, .operator-tabs, .workbench-tabs { flex-wrap: wrap; gap: 6px 12px; }
+  .trip-day-tabs button, .operator-tabs a, .operator-tabs button, .workbench-tabs button { min-height: 42px; }
+  .trip-layout, .trip-timeline, .trip-summary, .event-content, .booking-info, .request-main { min-width: 0; }
+  .trip-event { grid-template-columns: 42px minmax(0,1fr); }
+  .event-clock { font-size: 12px; }
+  .event-content h3, .booking-info h2, .request-main h3 { overflow-wrap: anywhere; }
+  .event-price { grid-column: 2; }
+  .event-edit-fields { grid-template-columns: minmax(0,1fr) !important; }
+  .event-edit-fields > * { grid-column: 1 !important; }
+  .modal-backdrop, .dialog-backdrop, .login-modal-backdrop, .experience-info-backdrop { padding: 10px; }
+  .confirm-dialog, .login-modal, .request-modal { padding: 22px 17px; }
+  .experience-preview-modal, .experience-info-modal { max-height: 94dvh; }
+  .site-footer { grid-template-columns: minmax(0,1fr); }
+  .site-footer > *, .top-link { grid-column: 1; grid-row: auto; }
+}
+
+@media (max-width: 330px) {
+  .header-tools { justify-content: space-between; flex-wrap: wrap; }
+  .role-select-label span { display: none; }
+  .role-select-label select { max-width: 88px; }
+  .demo-strip { font-size: 10px; }
+  .detail-facts, .inspiration-active-facts, .result-qualifications { gap: 8px; }
+  .person-heading { flex-direction: column; }
+  .companion-result { grid-template-columns: 1fr; }
+  .companion-result > img { width: 100%; height: 210px; }
+  .trip-event { grid-template-columns: minmax(0,1fr); }
+  .event-content, .event-price { grid-column: 1; }
+  .youth-summary { grid-template-columns: 1fr 1fr; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .page-section, .detail-page, .place-page, .regional-page, .route-map-page,
+  .companion-search-page, .companion-workbench, .multi-itinerary,
+  .role-page, .operator-page, .co-creation-page, .admin-overview,
+  .route-transition, .dialog-backdrop, .login-modal-backdrop,
+  .experience-preview-backdrop, .experience-info-backdrop, .modal-backdrop,
+  .confirm-dialog, .login-modal, .request-modal, .experience-preview-modal,
+  .experience-info-modal, .toast { animation: none !important; filter: none !important; transform: none !important; }
+  [data-scroll-reveal="pending"], [data-scroll-reveal="visible"] { opacity: 1; translate: none; transition: none; }
+}

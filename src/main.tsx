@@ -10,5 +10,7 @@ import './styles/motion.css'
 import './styles/responsive.css'
 import './styles/home.css'
 import './styles/v2.css'
+import './styles/site-refinement.css'
+import './styles/editorial-rebuild.css'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(<React.StrictMode><App /></React.StrictMode>)
