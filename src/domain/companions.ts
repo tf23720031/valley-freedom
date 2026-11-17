@@ -1,7 +1,8 @@
 import type { AppState, Companion, CompanionService, DomainResult, ServiceRequest, ServiceRequestStatus } from './types'
 import { makeId } from './fixtures'
+import { calculateBookingRevenue, type BookingDuration } from './revenueShare'
 
-export interface CompanionSearch { destination: string; date: string; startTime: string; durationMinutes: number; partySize: number; language: string; service: CompanionService; itineraryId?: string }
+export interface CompanionSearch { destination: string; date: string; startTime: string; durationMinutes: number; duration?: BookingDuration; partySize: number; language: string; service: CompanionService; itineraryId?: string }
 export const estimateCompanionFee = (durationMinutes: number, ratePerHour: number) => Math.ceil(durationMinutes / 30) * ratePerHour / 2
 export function updateCompanionProfile(state: AppState, input: { companionId: string; avatar: string; bio: string; ratePerHour: number; gender?: Companion['gender']; birthDate?: string; avatarImageKey?: string }): DomainResult<AppState> {
   const companion = state.companions.find((item) => item.id === input.companionId)
@@ -22,6 +23,10 @@ export function matchingCompanions(state: AppState, query: CompanionSearch): Com
   const regionalAreaTerms: Record<string, string[]> = {
     花蓮縣: ['瑞穗', '舞鶴', '玉里', '富里', '光復', '花蓮', '太魯閣', '東海岸'],
     臺東縣: ['臺東', '台東', '南迴', '太麻里', '大武'],
+    '花東太魯閣': ['花蓮', '太魯閣', '東海岸'],
+    '東海岸台11線': ['東海岸', '臺東', '台東', '成功', '花蓮'],
+    '花東縱谷台9線': ['瑞穗', '舞鶴', '玉里', '富里', '光復'],
+    '南迴路線': ['南迴', '太麻里', '大武'],
   }
   return state.companions.filter((person) => {
     const regionalTerms = regionalAreaTerms[query.destination]
@@ -34,16 +39,18 @@ export function matchingCompanions(state: AppState, query: CompanionSearch): Com
     return areaMatch && slotMatch && person.services.includes(query.service) && person.languages.includes(query.language) && !conflict && !itineraryConflict
   })
 }
-export function createServiceRequest(state: AppState, input: CompanionSearch & { travelerId: string; companionId: string; meetingPoint: string; notes: string; itineraryId?: string; rewardId?: string }, now = new Date().toISOString()): DomainResult<AppState> {
-  if (!input.destination.trim() || !input.meetingPoint.trim() || input.durationMinutes < 1 || input.durationMinutes > 480 || input.partySize < 1 || input.partySize > 20) return fail('invalid', '請確認地點、人數與服務時長。')
+export function createServiceRequest(state: AppState, input: CompanionSearch & { travelerId: string; companionId: string; meetingPoint: string; notes: string; experienceId?: string; itineraryId?: string; rewardId?: string }, now = new Date().toISOString()): DomainResult<AppState> {
+  const duration = input.duration ?? (input.durationMinutes >= 480 ? 'full-day' : 'half-day')
+  const durationMinutes = duration === 'half-day' ? 240 : 480
+  if (!input.destination.trim() || !input.meetingPoint.trim() || input.durationMinutes !== durationMinutes || input.partySize < 1 || input.partySize > 20) return fail('invalid', '請確認地點、人數與半日／全日服務時數。')
   const companion = state.companions.find((item) => item.id === input.companionId)
-  if (!companion || !matchingCompanions(state, input).some((item) => item.id === companion.id)) return fail('unavailable', '這位旅伴目前不符合條件或時段已被占用，請重新搜尋。')
-  const price = estimateCompanionFee(input.durationMinutes, companion.ratePerHour)
-  const reward = input.rewardId ? state.routeRewards.find((item) => item.id === input.rewardId && item.status === 'available') : undefined
-  if (input.rewardId && !reward) return fail('reward', '這張路線折抵已使用或不存在，請重新整理後確認。')
-  const request: ServiceRequest = { id: makeId('request'), travelerId: input.travelerId, companionId: companion.id, itineraryId: input.itineraryId, status: 'pending', destination: input.destination, meetingPoint: input.meetingPoint, date: input.date, startTime: input.startTime, durationMinutes: input.durationMinutes, partySize: input.partySize, language: input.language, service: input.service, notes: input.notes, price, discountAmount: reward ? Math.min(reward.amount, price) : 0, rewardId: reward?.id, createdAt: now, updatedAt: now }
-  const routeRewards = reward ? state.routeRewards.map((item) => item.id === reward.id ? { ...item, status: 'redeemed' as const, redeemedRequestId: request.id } : item) : state.routeRewards
-  return { ok: true, value: { ...state, routeRewards, serviceRequests: [...state.serviceRequests, request] }, valueId: request.id }
+  const experience = state.experiences.find((item) => item.id === (input.experienceId ?? state.experiences[0]?.id) && item.published)
+  if (!companion || !matchingCompanions(state, { ...input, durationMinutes }).some((item) => item.id === companion.id)) return fail('unavailable', '這位旅伴目前不符合條件或時段已被占用，請重新搜尋。')
+  if (!experience || !state.shopProfile.id) return fail('partner', '目前沒有可預約的合作體驗項目。')
+  const revenue = calculateBookingRevenue({ duration, partySize: input.partySize, assumptions: state.revenueAssumptions })
+  if (!revenue.ok) return fail('revenue', revenue.error)
+  const request: ServiceRequest = { id: makeId('request'), travelerId: input.travelerId, companionId: companion.id, itineraryId: input.itineraryId, experienceId: experience.id, operatorId: state.shopProfile.id, revenueSnapshot: revenue.value, legacyEstimate: false, status: 'pending', destination: input.destination, meetingPoint: input.meetingPoint, date: input.date, startTime: input.startTime, durationMinutes, partySize: input.partySize, language: input.language, service: input.service, notes: input.notes, price: revenue.value.gross, createdAt: now, updatedAt: now }
+  return { ok: true, value: { ...state, serviceRequests: [...state.serviceRequests, request] }, valueId: request.id }
 }
 export function companionRespond(state: AppState, input: { requestId: string; companionId: string; action: 'accept' | 'reject' | 'counter'; note?: string; startTime?: string; durationMinutes?: number; price?: number }, now = new Date().toISOString()): DomainResult<AppState> {
   const request = state.serviceRequests.find((item) => item.id === input.requestId && item.companionId === input.companionId)
@@ -53,8 +60,9 @@ export function companionRespond(state: AppState, input: { requestId: string; co
   else if (input.action === 'accept') next = { ...request, status: 'accepted', updatedAt: now }
   else {
     const startTime = input.startTime ?? request.startTime, durationMinutes = input.durationMinutes ?? request.durationMinutes
+    if (durationMinutes !== request.durationMinutes) return fail('duration', '旅伴預約時數固定為半日 4 小時或全日 8 小時。')
     if (durationMinutes < 1 || durationMinutes > 480 || !isAvailable(state, request, startTime, durationMinutes)) return fail('conflict', '提出的時段不在可服務時間內或與其他需求重疊。')
-    next = { ...request, status: 'countered', proposed: { startTime, durationMinutes, price: input.price ?? request.price, note: input.note ?? '' }, updatedAt: now }
+    next = { ...request, status: 'countered', proposed: { startTime, durationMinutes, price: request.price, note: input.note ?? '' }, updatedAt: now }
   }
   return replace(state, next)
 }

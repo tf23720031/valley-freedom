@@ -23,8 +23,7 @@ export function useHomeScrollStory(ref: RefObject<HTMLElement | null>) {
               scrollTrigger: {
                 trigger: hero,
                 start: 'top top',
-                end: '+=920',
-                pin: true,
+                end: 'bottom top',
                 scrub: 0.8,
                 anticipatePin: 1,
                 invalidateOnRefresh: true,

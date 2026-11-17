@@ -2,6 +2,7 @@ import type { AppState, DomainResult } from '../domain/types'
 import { createInitialState } from '../domain/fixtures'
 import type { Companion, Role } from '../domain/types'
 import { experiencePhotoSet } from '../domain/photoSources'
+import { DEFAULT_REVENUE_ASSUMPTIONS } from '../domain/revenueShare'
 
 export const STORAGE_KEY = 'valley-freedom-state-v1'
 type Listener = () => void
@@ -13,7 +14,7 @@ function notify() { listeners.forEach((listener) => listener()) }
 function isAppState(value: unknown): value is Record<string, unknown> {
   if (!value || typeof value !== 'object') return false
   const candidate = value as Record<string, unknown>
-  return [1, 2, 3, 4].includes(candidate.schemaVersion as number) && ['experiences', 'sessions', 'bookings', 'itineraries', 'tasks', 'applications', 'resources', 'drafts', 'pilotSessions', 'feedback', 'changeLog'].every((key) => Array.isArray(candidate[key]))
+  return [1, 2, 3, 4, 5].includes(candidate.schemaVersion as number) && ['experiences', 'sessions', 'bookings', 'itineraries', 'tasks', 'applications', 'resources', 'drafts', 'pilotSessions', 'feedback', 'changeLog'].every((key) => Array.isArray(candidate[key]))
 }
 function persist(value: AppState) {
   try { if (typeof localStorage !== 'undefined') localStorage.setItem(STORAGE_KEY, JSON.stringify(value)) }
@@ -51,21 +52,27 @@ function loadState(): AppState {
 }
 function migrateState(raw: Record<string, unknown>): AppState {
   const fresh = createInitialState()
-  if (raw.schemaVersion === 4 && Array.isArray(raw.companions) && Array.isArray(raw.serviceRequests)) {
+  if ((raw.schemaVersion === 4 || raw.schemaVersion === 5) && Array.isArray(raw.companions) && Array.isArray(raw.serviceRequests)) {
     const saved = raw as unknown as AppState
     const savedIds = new Set(saved.companions.map((person) => person.id))
     const missingDemoCompanions = fresh.companions.filter((person) => !savedIds.has(person.id))
-    return missingDemoCompanions.length ? { ...saved, companions: [...saved.companions, ...missingDemoCompanions] } : saved
+    return {
+      ...saved,
+      schemaVersion: 5,
+      revenueAssumptions: saved.revenueAssumptions ?? { ...DEFAULT_REVENUE_ASSUMPTIONS },
+      serviceRequests: saved.serviceRequests.map((request) => ({ ...request, legacyEstimate: request.revenueSnapshot ? request.legacyEstimate : true })),
+      companions: missingDemoCompanions.length ? [...saved.companions, ...missingDemoCompanions] : saved.companions,
+    }
   }
   if ((raw.schemaVersion === 2 || raw.schemaVersion === 3) && Array.isArray(raw.companions) && Array.isArray(raw.serviceRequests)) {
     const saved = raw as unknown as Omit<AppState, 'schemaVersion' | 'placeStamps' | 'placeRatings' | 'routeRewards' | 'partnerLinks' | 'subsidies' | 'placeMetrics'>
     const savedIds = new Set(saved.companions.map((person) => person.id))
     const missingDemoCompanions = fresh.companions.filter((person) => !savedIds.has(person.id))
-    return { ...fresh, ...saved, authenticated: false, rememberLogin: false, companionDemands: [], demandApplications: [], shopProfile: fresh.shopProfile, companions: [...saved.companions, ...missingDemoCompanions], schemaVersion: 4 }
+    return { ...fresh, ...saved, authenticated: false, rememberLogin: false, companionDemands: [], demandApplications: [], shopProfile: fresh.shopProfile, revenueAssumptions: { ...DEFAULT_REVENUE_ASSUMPTIONS }, serviceRequests: saved.serviceRequests.map((request) => ({ ...request, legacyEstimate: true })), companions: [...saved.companions, ...missingDemoCompanions], schemaVersion: 5 }
   }
   const old = raw as unknown as Record<string, any>
   const companions = fresh.companions.map((person) => ({ ...person })) as Companion[]
-  return { ...fresh, ...old, authenticated: false, rememberLogin: false, schemaVersion: 4, role: (old.role === 'youth' ? 'companion' : old.role) as Role, companionId: old.companionId ?? companions[0].id, companions, serviceRequests: [], companionDemands: [], demandApplications: [], shopProfile: fresh.shopProfile, bookings: (old.bookings ?? fresh.bookings).map((booking: AppState['bookings'][number]) => ({ ...booking, travelerCount: booking.travelerCount ?? booking.partySize })), itineraries: (old.itineraries ?? []).map((plan: AppState['itineraries'][number]) => ({ ...plan, endDate: plan.endDate ?? plan.date, dayCount: plan.dayCount ?? 1, submissionStatus: plan.submissionStatus ?? 'draft', items: plan.items.map((item) => ({ ...item, partySize: item.partySize ?? 1, place: item.place ?? '', category: item.category ?? (item.kind === 'experience' ? '地方體驗' : '自由活動') })) })), placeStamps: [], placeRatings: [], routeRewards: [], partnerLinks: [], subsidies: [], placeMetrics: fresh.placeMetrics }
+  return { ...fresh, ...old, authenticated: false, rememberLogin: false, schemaVersion: 5, role: (old.role === 'youth' ? 'companion' : old.role) as Role, companionId: old.companionId ?? companions[0].id, companions, serviceRequests: [], companionDemands: [], demandApplications: [], shopProfile: fresh.shopProfile, revenueAssumptions: { ...DEFAULT_REVENUE_ASSUMPTIONS }, bookings: (old.bookings ?? fresh.bookings).map((booking: AppState['bookings'][number]) => ({ ...booking, travelerCount: booking.travelerCount ?? booking.partySize })), itineraries: (old.itineraries ?? []).map((plan: AppState['itineraries'][number]) => ({ ...plan, endDate: plan.endDate ?? plan.date, dayCount: plan.dayCount ?? 1, submissionStatus: plan.submissionStatus ?? 'draft', items: plan.items.map((item) => ({ ...item, partySize: item.partySize ?? 1, place: item.place ?? '', category: item.category ?? (item.kind === 'experience' ? '地方體驗' : '自由活動') })) })), placeStamps: [], placeRatings: [], routeRewards: [], partnerLinks: [], subsidies: [], placeMetrics: fresh.placeMetrics }
 }
 export function getSnapshot(): AppState { return loadState() }
 export function getStoreWarning(): string { loadState(); return warning }

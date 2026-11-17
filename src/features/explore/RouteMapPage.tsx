@@ -6,7 +6,7 @@ import { useAppState } from '../../store/AppStateProvider'
 import { dispatch } from '../../store/appStore'
 import { ConfirmDialog, useNotify } from '../../components/Feedback'
 import { recordPlaceStampWithPassword } from '../../domain/routeRewards'
-import { clusterProjectedPlaces, createProjectedPlaces, countyPath, fitTaiwanProjection, layoutMarkerLabels, mainlandCounties, type TaiwanCountyCollection } from './mapGeometry'
+import { createProjectedPlaces, countyPath, fitTaiwanProjection, layoutMarkerLabels, mainlandCounties, type TaiwanCountyCollection } from './mapGeometry'
 
 const MAP_WIDTH = 600
 const MAP_HEIGHT = 760
@@ -23,12 +23,11 @@ export function RouteMapPage() {
   const state = useAppState()
   const [countyData, setCountyData] = useState<TaiwanCountyCollection | null>(null)
   const [mapError, setMapError] = useState(false)
-  const [selectedId, setSelectedId] = useState('practice-song')
-  const [area, setArea] = useState('瑞穗')
+  const [selectedId, setSelectedId] = useState('muri-sunshine')
+  const [selectedRoute, setSelectedRoute] = useState('valley-9')
   const [stampPassword, setStampPassword] = useState('')
   const [stampOpen, setStampOpen] = useState(false)
   const [zoom, setZoom] = useState(1)
-  const [expandedClusters, setExpandedClusters] = useState<Set<string>>(() => new Set())
   const mapWrapRef = useRef<HTMLElement>(null)
   const [mapHeight, setMapHeight] = useState<number>()
   const [mapWidth, setMapWidth] = useState<number>(MAP_WIDTH)
@@ -41,18 +40,16 @@ export function RouteMapPage() {
     id: place.id, name: place.name, longitude: place.coordinates?.longitude, latitude: place.coordinates?.latitude,
   })), MAP_WIDTH, MAP_HEIGHT) : [], [countyData, places])
   const markerScale = MAP_WIDTH / mapWidth
-  const mapItems = useMemo(() => clusterProjectedPlaces(projectedPlaces, 42 * markerScale / zoom, expandedClusters), [projectedPlaces, markerScale, zoom, expandedClusters])
+  const activeRegion = districts.find((region) => region.id === selectedRoute) ?? districts[0]
+  const activePlaceIds = useMemo(() => new Set(activeRegion.places.map((place) => place.id)), [activeRegion])
+  const routeProjectedPlaces = useMemo(() => projectedPlaces.filter((place) => activePlaceIds.has(place.id)), [projectedPlaces, activePlaceIds])
   const individualPlaces = useMemo(() => layoutMarkerLabels(
-    mapItems.flatMap((item) => item.kind === 'place' ? [item.place] : []),
+    routeProjectedPlaces,
     MAP_WIDTH,
     MAP_HEIGHT,
     42 * markerScale / zoom,
-  ), [mapItems, markerScale, zoom])
+  ), [routeProjectedPlaces, markerScale, zoom])
   const laidOutById = useMemo(() => new Map(individualPlaces.map((place) => [place.id, place])), [individualPlaces])
-  const nearest = useMemo(() => {
-    const sameRoute = districts.find((region) => region.name.includes(area) || (area === '東海岸' && region.id === 'coast-11') || (area === '太魯閣' && region.id === 'taroko') || (area === '南迴' && region.id === 'south-link'))
-    return sameRoute?.places ?? (area === '花東全區' ? places : districts.find((region) => region.id === 'valley-9')?.places ?? [])
-  }, [area, places])
   const stamps = new Set(state.placeStamps.map((stamp) => stamp.placeId))
   const selectedSources = selected ? [
     ...selected.sources,
@@ -101,31 +98,17 @@ export function RouteMapPage() {
     <header className="route-map-heading"><span className="eyebrow"><Route size={16}/> 沿著花東走 / 場域地圖</span><h1>順著海岸與縱谷，找到下一站。</h1><p>地圖只標出可核對的地點。候選名單不代表合作或可預約。</p></header>
     <div className="route-map-layout" style={mapHeight ? { '--map-panel-height': `${mapHeight}px` } as React.CSSProperties : undefined}>
       <section ref={mapWrapRef} className="taiwan-map-wrap" aria-label="臺灣本島縣市界線與花東候選場域地圖">
-        <div className="map-caption"><span>TAIWAN · EAST</span><b>花東候選場域</b><small>{projectedPlaces.length} 處位置已核對</small></div>
+        <div className="map-caption"><span>TAIWAN · EAST</span><b>{activeRegion.name}</b><small>{routeProjectedPlaces.length} 處此路線位置已核對</small></div>
         {projection ? <svg className="taiwan-map-svg" viewBox={`0 0 ${MAP_WIDTH} ${MAP_HEIGHT}`} role="img" aria-label="依公開地理座標定位的花東候選場域">
           <g transform={`translate(${MAP_WIDTH * (1 - zoom) / 2} ${MAP_HEIGHT * (1 - zoom) / 2}) scale(${zoom})`}>
             <g className="taiwan-county-shapes">
               {features.map((feature, index) => <path key={`${feature.properties?.COUNTYCODE ?? feature.properties?.COUNTYNAME ?? 'county'}-${index}`} d={countyPath(projection, feature) ?? undefined} />)}
             </g>
             <g className="map-place-markers">
-              {mapItems.map((item) => {
-                if (item.kind === 'cluster') {
-                  const containsSelected = item.places.some((place) => place.id === selectedId)
-                  const containsStamped = item.places.some((place) => stamps.has(place.id))
-                  const expand = () => {
-                    setExpandedClusters((current) => new Set(current).add(item.id))
-                    setSelectedId(item.places[0]!.id)
-                  }
-                  return <g key={item.id} className={`map-cluster ${containsSelected ? 'is-selected' : ''} ${containsStamped ? 'has-stamp' : ''}`} role="button" tabIndex={0} aria-label={`展開群聚，${item.places.length} 個場域`} onClick={expand} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); expand() } }}>
-                    <circle className="map-geo-anchor" cx={item.anchorX} cy={item.anchorY} r={3.5 * markerScale / zoom}/>
-                    <circle className="map-cluster-circle" cx={item.anchorX} cy={item.anchorY} r={17 * markerScale / zoom}/>
-                    <text className="map-cluster-count" x={item.anchorX} y={item.anchorY + 4 * markerScale / zoom} textAnchor="middle">{item.places.length}</text>
-                    <title>{item.places.map((place) => place.name).join('、')}</title>
-                  </g>
-                }
-                const point = laidOutById.get(item.id) ?? item.place
+              {individualPlaces.map((laidOutPlace) => {
+                const point = laidOutById.get(laidOutPlace.id) ?? laidOutPlace
                 const place = getPlaceById(point.id)
-                const number = places.findIndex((entry) => entry.id === point.id) + 1
+                const number = activeRegion.places.findIndex((entry) => entry.id === point.id) + 1
                 const stamped = stamps.has(point.id)
                 const markerSize = markerScale / zoom
                 return <g key={point.id} className={`map-place-marker ${selectedId === point.id ? 'is-selected' : ''} ${stamped ? 'is-stamped' : ''}`}>
@@ -145,18 +128,20 @@ export function RouteMapPage() {
         <div className="map-zoom-controls" role="group" aria-label="地圖縮放">
           <button type="button" aria-label="放大地圖" onClick={() => setZoom((value) => Math.min(3, Number((value + 0.5).toFixed(1))))} disabled={zoom >= 3}><Plus size={20}/></button>
           <button type="button" aria-label="縮小地圖" onClick={() => setZoom((value) => Math.max(1, Number((value - 0.5).toFixed(1))))} disabled={zoom <= 1}><Minus size={20}/></button>
-          <button type="button" aria-label="重設地圖視角" onClick={() => { setZoom(1); setExpandedClusters(new Set()) }}><RotateCcw size={17}/></button>
+          <button type="button" aria-label="重設地圖視角" onClick={() => setZoom(1)}><RotateCcw size={17}/></button>
         </div>
         <div className="map-legend"><span><i/>已核對位置</span><span><i className="stamped-dot"/>已集示意章</span></div>
         <small className="map-source-note">行政區資料：內政部國土測繪中心 2025 縣市界線（1140318），資料版本 2026-08-07.1，EPSG:4326；政府資料開放授權條款第 1 版。<a href={COUNTY_DATASET_URL} target="_blank" rel="noreferrer">資料版本</a> · <a href={COUNTY_GOVERNMENT_SOURCE} target="_blank" rel="noreferrer">原始資料說明</a></small>
       </section>
       <aside className="map-place-panel" tabIndex={0} aria-label="場域資料與沿線推薦，可在此區域捲動">
+        <nav className="route-region-choices" aria-label="選擇花東路線">{districts.map((region) => <button key={region.id} type="button" className={region.id === selectedRoute ? 'is-active' : ''} aria-pressed={region.id === selectedRoute} onClick={() => { setSelectedRoute(region.id); const firstPlace = region.places.find((place) => place.coordinates); if (firstPlace) setSelectedId(firstPlace.id) }}><span>{region.road}</span><b>{region.name}</b><small>{region.places.length} 個候選場域</small></button>)}</nav>
+        <div className="route-map-place-list"><span className="eyebrow">ROUTE FIELD NOTES</span><h3>{activeRegion.name}・場域索引</h3><p>{activeRegion.intro}</p><ul>{activeRegion.places.map((place, index) => <li key={place.id}><button type="button" className={selectedId === place.id ? 'is-active' : ''} onClick={() => setSelectedId(place.id)}><span>{String(index + 1).padStart(2, '0')} / {place.regionName}</span><b>{place.name}</b><small>{place.coordinates ? '位置已核對' : '位置待確認'}</small></button></li>)}</ul></div>
         {selected && <><span className="eyebrow">{selected.regionName} / 候選名單</span><h2>{selected.name}</h2><p>{selected.verifiedFacts[0] ?? '目前是候選參考名單；地點、活動與預約資訊尚待查證。'}</p><dl><div><dt>地址</dt><dd>{selected.address ?? '尚未查得可核對地址'}</dd></div><div><dt>座標</dt><dd>{selected.coordinates ? `${selected.coordinates.latitude.toFixed(6)}, ${selected.coordinates.longitude.toFixed(6)}${selected.coordinates.locationNote ? `；${selected.coordinates.locationNote}` : ''}` : '待確認，不顯示地圖標記'}</dd></div><div><dt>可確認服務</dt><dd>{selected.activityInfo[0] ?? '尚未查證，不推定提供體驗或服務'}</dd></div><div><dt>預約／合作</dt><dd>{selected.bookingChannel === 'public' ? '有公開預約資訊，請以業者公告為準' : '無可確認公開預約管道'}；尚未取得平台合作同意</dd></div></dl>
           {selectedDirections && <a className="text-link map-directions-link" href={selectedDirections} target="_blank" rel="noreferrer">{selected.coordinates ? 'Google Maps 導航' : 'Google Maps 搜尋'} <ArrowRight size={16}/></a>}
           <Link className="text-link" to={`/places/${selected.id}`}>查看場域資料 <ArrowRight size={16}/></Link></>}
         {selected && <><button className="button button-primary stamp-trigger" onClick={() => setStampOpen(true)} disabled={stamps.has(selected.id)}>{stamps.has(selected.id) ? '已收集此場域示意章' : '收集示意章'}</button><small className="stamp-demo-note">測試密碼機制，非安全驗證；請向店家詢問集章密碼。</small><section className="map-source-list"><h3>資料來源</h3><ul>{selectedSources.map((source) => <li key={`${selected.id}-${source.url}`}><a href={source.url} target="_blank" rel="noreferrer">{source.label} <ArrowRight size={14}/></a></li>)}</ul></section></>}
         <section className="unlocated-places" aria-labelledby="unlocated-heading"><h3 id="unlocated-heading">位置待確認</h3><p>未有足夠資料核對固定地點，因此不放置座標標記。</p><ul>{places.filter((place) => !place.coordinates).map((place) => <li key={place.id}><button onClick={() => setSelectedId(place.id)}><span>{place.regionName}</span><b>{place.name}</b><small>{place.address ?? '地址待查'}</small></button></li>)}</ul></section>
-        <div className="nearby-box"><span className="eyebrow"><MapPin size={15}/> 沿線推薦</span><h3>同區場域</h3><label>目前規劃位置<select value={area} onChange={(event) => setArea(event.target.value)}><option>瑞穗</option><option>東海岸</option><option>太魯閣</option><option>南迴</option><option>花東全區</option></select></label><ul>{nearest.slice(0, 4).map((place) => <li key={place.id}><button onClick={() => setSelectedId(place.id)}><span>{place.regionName}</span><b>{place.name}</b><small>{place.coordinates ? '地圖座標已核對' : '位置待確認'}</small></button></li>)}</ul><small className="fine-print">依路線區域列出，不代表距離最近或實際交通時間。</small></div>
+        <div className="nearby-box"><span className="eyebrow"><MapPin size={15}/> 沿線推薦</span><h3>此路線資訊</h3><p>{activeRegion.planning.transport}</p><small className="fine-print">依路線分類列出，不代表距離最近或實際交通時間。</small></div>
       </aside>
     </div>
     <section className="route-reward-band"><div><span className="eyebrow"><Sparkles size={15}/> 路線集章展示</span><h2>走訪兩個場域，累積旅伴折抵。</h2><p>目前紀錄 {state.placeStamps.length} 個場域；達兩個後可取得 NT$200 旅伴服務折抵示意券。</p><h3>我的集章紀錄</h3>{state.placeStamps.length ? <ul className="my-stamp-list">{state.placeStamps.map((stamp) => <li key={stamp.id}><b>{getPlaceById(stamp.placeId)?.name ?? stamp.placeId}</b><span>{new Date(stamp.stampedAt).toLocaleDateString('zh-TW')}・示意章</span></li>)}</ul> : <p>尚未收集，選擇場域並輸入店家密碼後即可留下紀錄。</p>}</div><div className="reward-count"><b>{Math.min(state.placeStamps.length, 2)}<small> / 2</small></b><span>已累積場域</span><Link className="button button-primary" to="/companions">找一位旅伴 <ArrowRight size={16}/></Link></div></section>

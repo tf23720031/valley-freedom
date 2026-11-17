@@ -155,9 +155,9 @@ export function HomePage() {
         <span className="companion-ghost-type" aria-hidden="true">TRAVEL<br />TOGETHER</span>
         {companions.map((person, index) => <article className={`companion-editorial companion-editorial-${index + 1}`} key={person.id}>
           <Link to={`/companions?companion=${person.id}`} className="companion-portrait companion-cutout"><img src={index === 0 ? '/photos/companion-lin-cutout.webp' : '/photos/companion-chen-cutout.webp'} alt={`${person.name}示意人物去背照片，非實際媒合旅伴`} loading="lazy" /><span>示意人物・非實際媒合</span></Link>
-          <div className="companion-editorial-copy"><span>{person.serviceAreas.join('・')}</span><h3>{person.name}</h3><p>{person.bio}</p><div className="companion-details"><span>{person.languages.join('／')}</span><span>NT$ {person.ratePerHour.toLocaleString()}／小時・示意報價</span></div><Link to={`/companions?companion=${person.id}`}>查看服務資訊 <ArrowRight size={15} /></Link></div>
+          <div className="companion-editorial-copy"><span>{person.serviceAreas.join('・')}</span><h3>{person.name}</h3><p>{person.bio}</p><div className="companion-details"><span>{person.languages.join('／')}</span><span>半日 NT$ {state.revenueAssumptions.halfDayPrice.toLocaleString()}／人起</span></div><Link to={`/companions?companion=${person.id}`}>查看服務資訊 <ArrowRight size={15} /></Link></div>
         </article>)}
-        <div className="companion-service-note"><b>怎麼預約</b><p>選日期、時間和地點送出詢問；雙方確認服務內容與費用後再決定是否成行。</p><Link to="/companions">查看旅伴服務 <ArrowUpRight size={16} /></Link></div>
+        <div className="companion-service-note"><b>怎麼預約</b><p>選擇半日或全日方案與同行人數，查看每人單價及預約總額，再送出需求等待旅伴回覆。</p><Link to="/companions">查看旅伴服務 <ArrowUpRight size={16} /></Link></div>
       </div>
       <Link className="companions-more" to="/companions">瀏覽旅伴示意資料 <ArrowUpRight size={16} /></Link>
     </section>

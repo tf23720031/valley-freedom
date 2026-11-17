@@ -14,9 +14,10 @@ export function useHomeSectionReveals(ref: RefObject<HTMLElement | null>) {
     media.add('(prefers-reduced-motion: no-preference)', () => {
       const context = gsap.context(() => {
         gsap.utils.toArray<HTMLElement>(revealTargets, root).forEach((target) => {
-          gsap.fromTo(target, { y: 38, autoAlpha: 0 }, {
+          // Keep editorial content readable if ScrollTrigger never fires (for
+          // example after a history restore or during a failed JS animation).
+          gsap.fromTo(target, { y: 18 }, {
             y: 0,
-            autoAlpha: 1,
             duration: 0.72,
             ease: 'power2.out',
             immediateRender: false,

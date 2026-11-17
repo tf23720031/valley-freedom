@@ -11,7 +11,8 @@ export function AdminOverviewPage() {
     ['業者工作台示範據點', 1],
     ['已發布體驗', state.experiences.filter((item) => item.published).length],
     ['預約總數', state.bookings.length],
-    ['待確認預約', state.bookings.filter((item) => item.status === 'pending').length],
+    ['待確認預約', state.bookings.filter((item) => item.status === 'pending').length + state.serviceRequests.filter((item) => item.status === 'pending').length],
+    ['旅伴套裝預約', state.serviceRequests.length],
     ['旅伴需求', state.companionDemands.length],
     ['已媒合需求', state.companionDemands.filter((item) => item.status === 'matched').length],
     ['青年協作任務', state.tasks.length],
@@ -25,6 +26,6 @@ export function AdminOverviewPage() {
       <article className="admin-shop-row"><div><h3>{state.shopProfile.name}</h3><p>{state.shopProfile.region}・展示資料</p><small>資料完整度：{[state.shopProfile.name,state.shopProfile.introduction,state.shopProfile.address,state.shopProfile.contact,state.shopProfile.website].filter(Boolean).length}/5 欄；聯絡方式待補</small></div><span className="status-pill status-pending">合作未確認</span><span>已上架體驗 {state.experiences.filter((item)=>item.published).length} 項</span><Link className="text-link" to="/operator/shop">查看店家資料</Link></article>
       <details className="candidate-venues"><summary>查看 17 個候選場域（不代表已合作）</summary>{districts.map((region)=><div key={region.id}><h3>{region.name}</h3><ul>{region.places.map((place)=><li key={place.id}>{place.name}　<span>{place.verificationStatus==='verified'?'資料已核對':place.verificationStatus==='partial'?'部分核對':'待確認'}</span></li>)}</ul></div>)}</details>
     </section>
-    <div className="admin-shortcuts"><Link className="button button-primary" to="/admin/growth">店家成長與補助</Link><button className="button button-outline" onClick={()=>notify('角色資料已共用；切換角色可查看對應工作台。','info')}>查看協作說明</button></div>
+    <div className="admin-shortcuts"><Link className="button button-primary" to="/admin/growth">預約分潤與營運試算</Link><button className="button button-outline" onClick={()=>notify('角色資料已共用；切換角色可查看對應工作台。','info')}>查看協作說明</button></div>
   </section>
 }
