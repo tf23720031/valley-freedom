@@ -11,6 +11,7 @@ import { CompanionAvatar } from '../../components/CompanionAvatar'
 import { ageAt } from '../../domain/companionProfile'
 import { useDialogBehavior } from '../../components/useDialogBehavior'
 import { calculateBookingRevenue } from '../../domain/revenueShare'
+import { getDemoServiceDate } from '../../domain/fixtures'
 
 const labels: Record<CompanionService, string> = {
   companionship: '一般同行',
@@ -24,11 +25,13 @@ export function CompanionSearchPage() {
   const notify = useNotify()
   const [params] = useSearchParams()
   const initialDestination = params.get('destination') || '花東縱谷台9線'
+  const defaultDate = getDemoServiceDate()
+  const requestedDate = params.get('date')
   const routeOptions = ['花東太魯閣', '東海岸台11線', '花東縱谷台9線', '南迴路線']
   const initialDuration = params.get('duration') === '480' || params.get('duration') === 'full-day' ? 'full-day' : 'half-day'
   const [query, setQuery] = useState<CompanionSearch>({
     destination: initialDestination,
-    date: params.get('date') || '2026-11-15',
+    date: requestedDate && requestedDate >= defaultDate ? requestedDate : defaultDate,
     startTime: params.get('startTime') || '09:00',
     durationMinutes: initialDuration === 'full-day' ? 480 : 240,
     duration: initialDuration,
@@ -79,7 +82,7 @@ export function CompanionSearchPage() {
         <h2>你的需求</h2>
         <label className="field-label"><span><MapPin size={14}/>服務路線</span><select aria-label="服務路線" value={query.destination} onChange={(event) => updateDestination(event.target.value)}>{!routeOptions.includes(query.destination) && <option value={query.destination}>{query.destination}</option>}{routeOptions.map((area) => <option key={area} value={area}>{area}</option>)}</select></label>
         <label className="field-label"><span>合作體驗／服務</span><select aria-label="合作體驗／服務" value="experience-1" disabled><option value="experience-1">木日光・文旦田裡的一日農事（展示合作）</option></select><small className="fine-print">目前僅列示設定為展示合作的服務；其他候選場域尚未確認合作。</small></label>
-        <label className="field-label"><span><CalendarDays size={14}/>服務日期</span><input type="date" value={query.date} onChange={(event) => update('date', event.target.value)}/></label>
+        <label className="field-label"><span><CalendarDays size={14}/>服務日期</span><input type="date" min={defaultDate} value={query.date} onChange={(event) => update('date', event.target.value)}/></label>
         <fieldset className="booking-duration-options"><legend>選擇體驗時段</legend><label><input type="radio" name="duration" checked={query.duration === 'half-day'} onChange={() => updateDuration('half-day')}/><span><b>半日・4 小時</b><strong>NT$ {state.revenueAssumptions.halfDayPrice.toLocaleString()} <small>/ 人</small></strong></span></label><label><input type="radio" name="duration" checked={query.duration === 'full-day'} onChange={() => updateDuration('full-day')}/><span><b>全日・8 小時</b><strong>NT$ {state.revenueAssumptions.fullDayPrice.toLocaleString()} <small>/ 人</small></strong></span></label></fieldset>
         <label className="field-label">開始時間<select value={query.startTime} onChange={(event) => update('startTime', event.target.value)}>{(query.duration === 'full-day' ? ['09:00'] : ['09:00', '13:00', '14:00']).map((time) => <option key={time}>{time}</option>)}</select></label>
         <p className="transport-reminder">集合地點：木日光文旦驛站入口。交通請自行安排；目前為展示預約流程，不涉及付款。</p>
@@ -108,18 +111,23 @@ export function CompanionSearchPage() {
         </article>) : <div className="empty-state"><span className="empty-number">／</span><h2>目前沒有符合的旅伴</h2><p>試著更改日期、服務時段、語言或服務區域。</p></div>}
       </div>
     </div>
-    {modal && selectedPerson && <div className="modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setModal(false) }}>
-      <form ref={requestDialog} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="request-modal-title" className="request-modal" onSubmit={send}>
-        <button type="button" className="modal-close" onClick={() => setModal(false)} aria-label="關閉">×</button>
-        <div className="request-modal-body"><span className="eyebrow">REQUEST TO BOOK / DEMO</span><h2 id="request-modal-title">提出旅伴預約需求</h2><p>{selectedPerson.name}・{query.date}・{query.startTime}・{query.duration === 'full-day' ? '全日 8 小時' : '半日 4 小時'}</p>
+    {modal && selectedPerson && <>
+      <div className="modal fade show d-block booking-request-modal" role="dialog" aria-modal="true" aria-labelledby="request-modal-title" onMouseDown={(event) => { if (event.target === event.currentTarget) setModal(false) }}>
+        <div className="modal-dialog modal-dialog-centered modal-dialog-scrollable booking-request-dialog">
+          <form ref={requestDialog} tabIndex={-1} className="modal-content booking-request-content" onSubmit={send}>
+        <header className="modal-header booking-request-header"><div><span className="eyebrow">REQUEST TO BOOK / DEMO</span><h2 id="request-modal-title" className="modal-title">提出旅伴預約需求</h2><p>{selectedPerson.name}・{query.date}・{query.startTime}・{query.duration === 'full-day' ? '全日 8 小時' : '半日 4 小時'}</p></div><button type="button" className="btn-close" onClick={() => setModal(false)} aria-label="關閉"></button></header>
+        <div className="modal-body request-modal-body">
           <div className="request-experience-summary"><span>地方合作服務</span><b>木日光文旦驛站・文旦田裡的一日農事</b><small>展示合作資料</small></div>
-          <label className="field-label">集合位置<input required value={meeting} placeholder="請填寫實際集合位置" onChange={(event) => { setMeeting(event.target.value); setMeetingEdited(true) }}/></label>
-          <label className="field-label">補充需求<textarea value={notes} onChange={(event) => setNotes(event.target.value)} placeholder="例如：希望先協助確認餐廳是否適合素食。" rows={3}/></label>
+          <label className="field-label">集合位置<input className="form-control" required value={meeting} placeholder="請填寫實際集合位置" onChange={(event) => { setMeeting(event.target.value); setMeetingEdited(true) }}/></label>
+          <label className="field-label">補充需求<textarea className="form-control" value={notes} onChange={(event) => setNotes(event.target.value)} placeholder="例如：希望先協助確認餐廳是否適合素食。" rows={3}/></label>
           <div className="request-summary-grid"><span>同行人數<strong>{query.partySize} 人</strong></span><span>每人費用<strong>NT$ {estimate?.perPersonPrice.toLocaleString() ?? '—'}</strong></span></div>
           <p className="request-legal">送出後為「待旅伴回覆」，尚未確認或付款。人物與服務資訊為展示資料。</p>
         </div>
-        <footer className="request-modal-footer"><div className="request-estimate"><span>預約總額</span><b>NT$ {estimate?.gross.toLocaleString() ?? '—'}</b></div><button type="submit" className="button button-primary full-button" disabled={!estimate}>送出預約需求 <ArrowRight size={15}/></button></footer>
+        <footer className="modal-footer request-modal-footer"><div className="request-estimate"><span>預約總額</span><b>NT$ {estimate?.gross.toLocaleString() ?? '—'}</b></div><button type="submit" className="btn btn-primary button button-primary full-button" disabled={!estimate}>送出預約需求 <ArrowRight size={15}/></button></footer>
       </form>
-    </div>}
+        </div>
+      </div>
+      <div className="modal-backdrop fade show booking-request-backdrop" onClick={() => setModal(false)}></div>
+    </>}
   </section>
 }

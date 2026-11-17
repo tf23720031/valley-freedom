@@ -565,3 +565,114 @@
   .request-modal-footer .request-estimate b { justify-self: end; font-size: 19px; }
   .request-modal-footer .button { width: 100%; min-height: 46px; }
 }
+
+/* Bootstrap booking modal: keep the action row visible at every viewport size. */
+.booking-request-modal {
+  position: fixed;
+  inset: 0;
+  display: flex !important;
+  align-items: center;
+  z-index: 1200;
+  width: 100%;
+  height: 100dvh;
+  padding: 12px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: rgb(10 35 36 / .56);
+  backdrop-filter: blur(7px);
+}
+.booking-request-dialog {
+  width: min(560px, 100%);
+  max-width: 560px;
+  height: calc(100% - 24px);
+  min-height: 0;
+  margin: 12px auto;
+}
+.booking-request-content {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  height: min(88dvh, 760px);
+  max-height: min(88dvh, 760px);
+  overflow: hidden;
+  border: 1px solid #d1d9cc;
+  border-top: 3px solid #a67451;
+  border-radius: 2px;
+  background: #f8faf5;
+  color: #183e42;
+  box-shadow: 0 24px 80px rgb(0 0 0 / .24);
+}
+.booking-request-header {
+  align-items: flex-start;
+  gap: 16px;
+  padding: 20px 24px 12px;
+  border-bottom: 1px solid #d8e0d7;
+}
+.booking-request-header > div { min-width: 0; }
+.booking-request-header .eyebrow { font-size: 11px; }
+.booking-request-header .modal-title {
+  margin: 6px 0 3px;
+  color: #123e43;
+  font-size: clamp(22px, 4vw, 28px);
+  font-weight: 600;
+  line-height: 1.3;
+}
+.booking-request-header p { margin: 0; color: #6b7368; font-size: 13px; line-height: 1.5; }
+.booking-request-header .btn-close { flex: 0 0 auto; margin: 2px 0 0 auto; }
+.booking-request-content .request-modal-body {
+  min-height: 0;
+  padding: 14px 24px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #b6c8bd transparent;
+}
+.booking-request-content .field-label { display: grid; gap: 6px; margin: 12px 0; color: #52665b; font-size: 13px; }
+.booking-request-content .form-control {
+  min-height: 44px;
+  border: 1px solid #cbd5c9;
+  border-radius: 0;
+  background: #fffefa;
+  color: #203f3e;
+  font: inherit;
+  box-shadow: none;
+}
+.booking-request-content textarea.form-control { min-height: 76px; resize: vertical; }
+.booking-request-content .form-control:focus { border-color: #527b77; box-shadow: 0 0 0 .2rem rgb(82 123 119 / .16); }
+.booking-request-content .request-experience-summary { margin: 0 0 12px; }
+.booking-request-content .request-summary-grid { margin: 12px 0 8px; }
+.booking-request-content .request-legal { margin: 8px 0 0; font-size: 12px; line-height: 1.55; }
+.booking-request-content .request-modal-footer {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(190px, auto);
+  align-items: center;
+  gap: 16px;
+  padding: 12px 24px calc(12px + env(safe-area-inset-bottom));
+  border-top: 1px solid #d8e0d7;
+  background: #f8faf5;
+  box-shadow: 0 -8px 20px rgb(13 53 56 / .06);
+}
+.booking-request-content .request-estimate { display: grid; gap: 2px; margin: 0; padding: 0; border: 0; }
+.booking-request-content .request-estimate span { color: #69776d; font-size: 12px; }
+.booking-request-content .request-estimate b { color: #123e43; font-size: 22px; }
+.booking-request-content .request-modal-footer .button { min-height: 46px; margin: 0; white-space: normal; }
+.booking-request-backdrop { z-index: 1190; padding: 0; background: rgb(10 35 36 / .56); backdrop-filter: blur(7px); }
+@media (max-width: 480px) {
+  .booking-request-modal { padding: 8px; }
+  .booking-request-dialog { width: 100%; max-width: none; }
+  .booking-request-content { max-height: min(88dvh, 720px); }
+  .booking-request-header { padding: 16px 17px 10px; }
+  .booking-request-content .request-modal-body { padding: 12px 17px; }
+  .booking-request-content .request-modal-footer { grid-template-columns: 1fr; gap: 7px; padding: 9px 17px calc(9px + env(safe-area-inset-bottom)); }
+  .booking-request-content .request-estimate { grid-template-columns: auto 1fr; align-items: baseline; }
+  .booking-request-content .request-estimate b { justify-self: end; font-size: 19px; }
+  .booking-request-content .request-modal-footer .button { width: 100%; min-height: 44px; }
+}
+@media (max-height: 600px) {
+  .booking-request-modal { align-items: start; }
+  .booking-request-dialog { margin-block: 0; }
+  .booking-request-content { height: 96dvh; max-height: 96dvh; }
+  .booking-request-header { padding-block: 12px 8px; }
+  .booking-request-content .request-modal-body { padding-block: 9px; }
+}

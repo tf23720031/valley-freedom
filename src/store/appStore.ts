@@ -54,6 +54,14 @@ function migrateState(raw: Record<string, unknown>): AppState {
   const fresh = createInitialState()
   if ((raw.schemaVersion === 4 || raw.schemaVersion === 5) && Array.isArray(raw.companions) && Array.isArray(raw.serviceRequests)) {
     const saved = raw as unknown as AppState
+    const freshCompanionsById = new Map(fresh.companions.map((person) => [person.id, person]))
+    const today = new Date()
+    const todayISO = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
+    const companionsWithCurrentDemoSlots = saved.companions.map((person) => {
+      const demo = freshCompanionsById.get(person.id)
+      if (!person.demo || !demo || !person.availability.length || person.availability.some((slot) => slot.date >= todayISO)) return person
+      return { ...person, availability: demo.availability }
+    })
     const savedIds = new Set(saved.companions.map((person) => person.id))
     const missingDemoCompanions = fresh.companions.filter((person) => !savedIds.has(person.id))
     return {
@@ -61,7 +69,7 @@ function migrateState(raw: Record<string, unknown>): AppState {
       schemaVersion: 5,
       revenueAssumptions: saved.revenueAssumptions ?? { ...DEFAULT_REVENUE_ASSUMPTIONS },
       serviceRequests: saved.serviceRequests.map((request) => ({ ...request, legacyEstimate: request.revenueSnapshot ? request.legacyEstimate : true })),
-      companions: missingDemoCompanions.length ? [...saved.companions, ...missingDemoCompanions] : saved.companions,
+      companions: [...companionsWithCurrentDemoSlots, ...missingDemoCompanions],
     }
   }
   if ((raw.schemaVersion === 2 || raw.schemaVersion === 3) && Array.isArray(raw.companions) && Array.isArray(raw.serviceRequests)) {
