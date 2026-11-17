@@ -86,7 +86,7 @@ export function dispatch(updater: (current: AppState) => DomainResult<AppState>)
   return result
 }
 export function setRole(role: Role): DomainResult<AppState> { return dispatch((current) => ({ ok: true, value: { ...current, role } })) }
-export function loginDemo(rememberLogin = false): DomainResult<AppState> { return dispatch((current) => ({ ok: true, value: { ...current, authenticated: true, rememberLogin, role: 'traveler' } })) }
+export function loginDemo(rememberLogin = false, role: Role = 'traveler'): DomainResult<AppState> { return dispatch((current) => ({ ok: true, value: { ...current, authenticated: true, rememberLogin, role } })) }
 export function logoutDemo(): DomainResult<AppState> { return dispatch((current) => ({ ok: true, value: { ...current, authenticated: false, rememberLogin: false } })) }
 export function resetDemoData(): AppState {
   state = createInitialState()

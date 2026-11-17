@@ -6,6 +6,14 @@ import { loginDemo } from '../../store/appStore'
 import { useNotify } from '../../components/Feedback'
 import { useOpenLoginModal } from '../../components/LoginModalContext'
 import { useDialogBehavior } from '../../components/useDialogBehavior'
+import type { Role } from '../../domain/types'
+
+function roleForReturnPath(path: string): Role {
+  if (path.startsWith('/admin')) return 'admin'
+  if (path.startsWith('/operator')) return 'operator'
+  if (path.startsWith('/companion') || path.startsWith('/youth')) return 'companion'
+  return 'traveler'
+}
 
 export function LoginPage() {
   const open = useOpenLoginModal()
@@ -21,7 +29,7 @@ export function LoginModal({ open, returnTo, onClose }: { open: boolean; returnT
   const dialog = useDialogBehavior(open, onClose)
   if (!open || state.authenticated) return null
   const enter = () => {
-    loginDemo(remember)
+    loginDemo(remember, roleForReturnPath(returnTo))
     notify('已使用展示帳號登入。', 'success')
     onClose()
     navigate(returnTo && returnTo !== '/login' ? returnTo : '/dashboard', { replace: true })

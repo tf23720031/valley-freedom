@@ -110,12 +110,14 @@ export function CompanionSearchPage() {
     </div>
     {modal && selectedPerson && <div className="modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setModal(false) }}>
       <form ref={requestDialog} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="request-modal-title" className="request-modal" onSubmit={send}>
-        <button type="button" className="modal-close" onClick={() => setModal(false)} aria-label="關閉">×</button><span className="eyebrow">REQUEST TO BOOK / DEMO</span><h2 id="request-modal-title">提出旅伴預約需求</h2><p>{selectedPerson.name}・{query.date}・{query.startTime}・{query.duration === 'full-day' ? '全日 8 小時' : '半日 4 小時'}</p>
-        <div className="request-experience-summary"><span>地方合作服務</span><b>木日光文旦驛站・文旦田裡的一日農事</b><small>展示合作資料</small></div>
-        <label className="field-label">集合位置<input required value={meeting} placeholder="請填寫實際集合位置" onChange={(event) => { setMeeting(event.target.value); setMeetingEdited(true) }}/></label>
-        <label className="field-label">補充需求<textarea value={notes} onChange={(event) => setNotes(event.target.value)} placeholder="例如：希望先協助確認餐廳是否適合素食。" rows={4}/></label>
-        <div className="request-summary-grid"><span>同行人數<strong>{query.partySize} 人</strong></span><span>每人費用<strong>NT$ {estimate?.perPersonPrice.toLocaleString() ?? '—'}</strong></span></div>
-        <p className="request-legal">此需求送出後為「待旅伴回覆」，不是已確認預約，也不涉及付款。人物與服務資訊為展示資料。</p>
+        <button type="button" className="modal-close" onClick={() => setModal(false)} aria-label="關閉">×</button>
+        <div className="request-modal-body"><span className="eyebrow">REQUEST TO BOOK / DEMO</span><h2 id="request-modal-title">提出旅伴預約需求</h2><p>{selectedPerson.name}・{query.date}・{query.startTime}・{query.duration === 'full-day' ? '全日 8 小時' : '半日 4 小時'}</p>
+          <div className="request-experience-summary"><span>地方合作服務</span><b>木日光文旦驛站・文旦田裡的一日農事</b><small>展示合作資料</small></div>
+          <label className="field-label">集合位置<input required value={meeting} placeholder="請填寫實際集合位置" onChange={(event) => { setMeeting(event.target.value); setMeetingEdited(true) }}/></label>
+          <label className="field-label">補充需求<textarea value={notes} onChange={(event) => setNotes(event.target.value)} placeholder="例如：希望先協助確認餐廳是否適合素食。" rows={3}/></label>
+          <div className="request-summary-grid"><span>同行人數<strong>{query.partySize} 人</strong></span><span>每人費用<strong>NT$ {estimate?.perPersonPrice.toLocaleString() ?? '—'}</strong></span></div>
+          <p className="request-legal">送出後為「待旅伴回覆」，尚未確認或付款。人物與服務資訊為展示資料。</p>
+        </div>
         <footer className="request-modal-footer"><div className="request-estimate"><span>預約總額</span><b>NT$ {estimate?.gross.toLocaleString() ?? '—'}</b></div><button type="submit" className="button button-primary full-button" disabled={!estimate}>送出預約需求 <ArrowRight size={15}/></button></footer>
       </form>
     </div>}

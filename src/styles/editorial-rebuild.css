@@ -507,3 +507,61 @@
   .revenue-assumption-grid, .revenue-scenarios, .revenue-month-summary > div { grid-template-columns: minmax(0,1fr); }
   .revenue-model-section { padding: 16px 13px; }
 }
+
+.login-required-gate {
+  width: min(100% - 32px, 720px);
+  min-height: min(62svh, 560px);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(24px, 6vw, 72px) 0;
+  color: #183e42;
+}
+.login-required-gate h1 { max-width: 16ch; margin: 12px 0; font-size: clamp(30px, 5vw, 50px); line-height: 1.2; text-wrap: balance; }
+.login-required-gate p { max-width: 52ch; color: #66746a; line-height: 1.75; }
+.login-gate-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+
+.request-modal {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  width: min(100%, 620px);
+  max-height: min(76dvh, 660px);
+  overflow: hidden;
+  padding: 0;
+}
+.request-modal-body {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  padding: 30px clamp(24px, 4vw, 38px) 12px;
+}
+.request-modal-body::-webkit-scrollbar { display: none; }
+.request-modal-body > p { margin-block: 8px 14px; }
+.request-modal-body .request-experience-summary { margin-block: 10px; padding: 10px 12px; }
+.request-modal-body .field-label { margin-block: 9px; }
+.request-modal-body textarea { min-height: 76px; max-height: 120px; }
+.request-modal-body .request-summary-grid { margin-block: 10px; padding: 10px 12px; }
+.request-modal-body .request-legal { margin: 8px 0 2px; font-size: 12px; line-height: 1.5; }
+.request-modal-footer {
+  position: relative;
+  inset: auto;
+  margin: 0;
+  padding: 12px clamp(24px, 4vw, 38px) calc(12px + env(safe-area-inset-bottom));
+  box-shadow: 0 -8px 20px rgb(13 53 56 / .06);
+}
+
+@media (max-width: 760px) {
+  .request-modal { max-height: min(80dvh, 640px); }
+}
+@media (max-width: 420px) {
+  .login-gate-actions { flex-direction: column; align-items: stretch; }
+  .login-gate-actions .button { width: 100%; }
+  .request-modal { max-height: min(78dvh, 590px); }
+  .request-modal-body { padding: 24px 17px 10px; }
+  .request-modal-footer { grid-template-columns: minmax(0, 1fr); gap: 8px; padding: 10px 17px calc(10px + env(safe-area-inset-bottom)); }
+  .request-modal-footer .request-estimate { grid-template-columns: auto 1fr; align-items: baseline; gap: 10px; }
+  .request-modal-footer .request-estimate b { justify-self: end; font-size: 19px; }
+  .request-modal-footer .button { width: 100%; min-height: 46px; }
+}
