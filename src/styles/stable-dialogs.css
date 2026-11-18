@@ -42,3 +42,99 @@
   .stable-dialog-footer, .confirm-dialog .dialog-actions { padding: 12px 18px calc(12px + env(safe-area-inset-bottom)); }
   .confirm-dialog .dialog-actions .button { flex: 1; min-width: 0; }
 }
+
+/* Field-journal art direction. Only interior surfaces and layout change here. */
+.confirm-dialog, .experience-info-modal, .experience-preview-modal, .login-modal, .companion-journal-modal .booking-request-content {
+  --modal-paper: #f6f3e9;
+  --modal-ink: #103e3e;
+  --modal-accent: #ad643e;
+  --modal-grid: rgb(89 122 90 / .13);
+  background-color: var(--modal-paper); color: var(--modal-ink);
+  border-color: #a2b29a; border-top-color: var(--modal-accent); border-radius: 2px;
+}
+.stable-dialog-header, .companion-journal-modal .booking-request-header {
+  background-color: #f6f3e9;
+  background-image: linear-gradient(90deg, rgb(89 122 90 / .09) 1px, transparent 1px), linear-gradient(rgb(89 122 90 / .09) 1px, transparent 1px), linear-gradient(105deg, #f6f3e9 0%, #f6f3e9 58%, #f6f3e9e6 58.2%, #f6f3e930 100%), url('/photos/valley-hero.webp');
+  background-size: 24px 24px, 24px 24px, 100% 100%, cover;
+  background-position: left top, left top, center, center 50%;
+  border-bottom: 1px solid #ad643e80;
+}
+.stable-dialog-header h2, .companion-journal-modal .booking-request-header .modal-title { max-width: 100%; color: #103e3e; font-weight: 900; letter-spacing: -.035em; }
+.stable-dialog-header > div { min-width: 0; }
+.companion-journal-modal .booking-request-header { justify-content: space-between; }
+.companion-journal-modal .booking-request-header > div { flex: 1; min-width: 0; }
+.stable-dialog-header .eyebrow, .companion-journal-modal .journal-dialog-kicker { color: #855737; font-family: var(--font-latin); font-size: 10px; letter-spacing: .13em; }
+.stable-dialog-header .modal-close, .stable-dialog-close, .companion-journal-modal .booking-request-header .btn-close { flex-shrink: 0; background-color: #f6f3e9; border: 1px solid #c2cbb8; border-radius: 0; }
+.stable-dialog-body {
+  border-left: 10px solid #e1e8b970;
+  background-image: linear-gradient(90deg, rgb(89 122 90 / .06) 1px, transparent 1px), linear-gradient(rgb(89 122 90 / .06) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+.stable-dialog-body > p { background: #f6f3e9d9; }
+.stable-dialog-body .experience-info-photo {
+  border-right: 12px solid #dfe797; border-bottom: 7px solid #f6f3e9;
+  clip-path: polygon(0 0, 93% 0, 93% 10%, 100% 10%, 100% 100%, 6% 100%, 6% 91%, 0 91%);
+}
+.stable-dialog-body > .eyebrow { display: inline-block; padding: 4px 8px; color: #103e3e; background: #e1e8ae; font-size: 11px; letter-spacing: .04em; }
+.stable-dialog-body .experience-info-facts { gap: 8px 18px; padding: 14px 0; border-color: #9bad95; background: #f6f3e9ee; }
+.stable-dialog-body .experience-info-duration, .stable-dialog-body .booking-headcount { min-width: 0; margin-block: 16px; }
+.stable-dialog-body .booking-headcount > b { display: block; padding: 12px 14px; color: #103e3e; background: #e1e8ae; font-size: 16px; }
+.stable-dialog-body .field-label { display: grid; gap: 8px; }
+.stable-dialog-body .field-label input, .stable-dialog-body .field-label select,
+.companion-journal-modal .booking-request-content input.form-control,
+.login-modal input:not([type=checkbox]) {
+  box-sizing: border-box; height: 48px; min-height: 48px; padding: 10px 12px; border: 1px solid #879b80; border-radius: 0; background: #fffdf6; color: #103e3e; font-size: 16px;
+}
+.stable-dialog-body .field-label input:focus, .stable-dialog-body .field-label select:focus,
+.companion-journal-modal .form-control:focus, .login-modal input:focus { outline: 2px solid #ad643e; outline-offset: 2px; box-shadow: none; }
+.stable-dialog-footer, .confirm-dialog .dialog-actions, .companion-journal-modal .booking-request-content .request-modal-footer {
+  gap: 12px; background-color: #f6f3e9;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 10'%3E%3Cpath d='M0 4 30 2 60 7 90 3 120 5 150 1 180 6 210 3 240 7 270 2 300 5 330 1 360 6 390 3 420 7 450 2 480 5 510 1 540 6 570 3 600 5' fill='none' stroke='%23ad643e' stroke-opacity='.55' stroke-width='.7'/%3E%3C/svg%3E"), linear-gradient(90deg, #e1e8ae55, #f6f3e9 65%);
+  background-size: 100% 10px, 100% 100%; background-position: left top, center; background-repeat: no-repeat;
+  border-top: 1px solid #a6b39d;
+}
+.stable-dialog-footer .button, .confirm-dialog .dialog-actions .button,
+.companion-journal-modal .booking-request-content .request-modal-footer .button {
+  min-height: 48px; border-radius: 0; font-size: 15px; font-weight: 600; box-shadow: none;
+}
+.stable-dialog-footer .button-quiet { color: #103e3e; border: 1px solid #6d8468; background: #fffdf6; }
+.stable-dialog-footer .button-danger { color: #fffdf6; border-color: #a6633e; background: #a6633e; }
+.confirm-dialog .confirmation-summary { gap: 12px; border-left: 3px solid #ad643e; background: #e9eccf; }
+.confirm-dialog .confirmation-results li { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: 10px; padding: 16px 0; border-color: #a6b39d; font-size: 13px; line-height: 1.8; }
+.confirm-dialog .confirmation-results li > span { min-width: 0; overflow-wrap: anywhere; }
+.confirm-dialog .confirmation-results li > b { padding: 4px 8px; background: #e1e8ae; color: #103e3e; font-size: 12px; font-weight: 600; }
+.confirm-dialog .confirmation-results li.failed > b { background: #edd7c4; color: #873c22; }
+.companion-journal-modal .booking-request-content .request-modal-body { border-left: 10px solid #e1e8b970; background-image: linear-gradient(90deg, rgb(89 122 90 / .06) 1px, transparent 1px), linear-gradient(rgb(89 122 90 / .06) 1px, transparent 1px); background-size: 24px 24px; }
+.companion-journal-modal .request-experience-summary { border-left: 3px solid #ad643e; background: #e1e8ae; }
+.companion-journal-modal .booking-request-content textarea.form-control { min-height: 96px; padding: 12px; border-color: #879b80; background: #fffdf6; color: #103e3e; font-size: 16px; }
+.companion-journal-modal .request-summary-grid { background: #f6f3e9ed; border-color: #a6b39d; }
+.companion-journal-modal .booking-request-content .request-estimate b { color: #103e3e; font: 600 30px/1.3 Georgia, serif; }
+.login-modal {
+  padding: 32px; border-left: 10px solid #e1e8b9;
+  background-image: linear-gradient(90deg, rgb(89 122 90 / .08) 1px, transparent 1px), linear-gradient(rgb(89 122 90 / .08) 1px, transparent 1px), linear-gradient(105deg, #f6f3e9 55%, #f6f3e9c0 70%, #f6f3e960 100%), url('/photos/valley-hero.webp');
+  background-size: 24px 24px, 24px 24px, 100% 150px, 100% 150px;
+  background-repeat: repeat, repeat, no-repeat, no-repeat; background-position: top left, top left, top right, top right;
+}
+.login-modal > h2 { margin: 14px 44px 16px 0; color: #103e3e; font-size: clamp(25px, 5vw, 32px); font-weight: 900; line-height: 1.4; overflow-wrap: anywhere; }
+.login-modal > p, .login-modal .field-label { background: #f6f3e9ed; }
+.login-modal .login-modal-close { background: #f6f3e9; border: 1px solid #c2cbb8; border-radius: 0; }
+.login-modal .password-field input { padding-right: 52px; }
+.login-modal form { gap: 14px; }.login-modal .field-label { margin: 0; gap: 8px; color: #103e3e; font-size: 13px; }
+.login-modal .login-submit, .login-modal .button-test-account { min-height: 48px; border: 1px solid #103e3e; border-radius: 0; font-size: 15px; }
+.login-modal .login-submit { background: #103e3e; color: #fffdf6; }.login-modal .button-test-account { background: #fffdf6; color: #103e3e; }
+.login-modal .login-note { padding: 12px; background: #e9eccf; font-size: 11px; }
+.experience-preview-modal { border-left: 10px solid #e1e8ae; }
+.experience-preview-modal > img { border-bottom: 8px solid #ad643e; }
+.experience-preview-copy { background-image: linear-gradient(90deg, rgb(89 122 90 / .09) 1px, transparent 1px), linear-gradient(rgb(89 122 90 / .09) 1px, transparent 1px); background-size: 24px 24px; }
+.experience-preview-copy h2 { color: #103e3e; font-weight: 900; letter-spacing: -.035em; }
+.experience-preview-copy > p, .experience-preview-copy > div { background: #f6f3e9d9; }
+.experience-preview-copy > span { display: inline-block; padding: 5px 8px; background: #e1e8ae; color: #103e3e; }
+.experience-preview-copy .button { min-height: 48px; border: 1px solid #103e3e; border-radius: 0; background: #103e3e; color: #fffdf6; }
+.experience-preview-close { width: 44px; height: 44px; border: 1px solid #c2cbb8; border-radius: 0; background: #f6f3e9; }
+@media (max-width: 560px) {
+  .stable-dialog-header, .companion-journal-modal .booking-request-header { background-image: linear-gradient(90deg, rgb(89 122 90 / .1) 1px, transparent 1px), linear-gradient(rgb(89 122 90 / .1) 1px, transparent 1px), linear-gradient(105deg, #f6f3e9 65%, #f6f3e9c0 100%), url('/photos/valley-hero.webp'); }
+  .stable-dialog-body, .companion-journal-modal .booking-request-content .request-modal-body { border-left-width: 6px; }
+  .confirm-dialog .confirmation-results li { grid-template-columns: minmax(0, 1fr); gap: 8px; }.confirm-dialog .confirmation-results li > b { justify-self: start; }
+  .login-modal { padding: 26px 20px; border-left-width: 6px; }
+  .stable-dialog-footer .button, .confirm-dialog .dialog-actions .button, .companion-journal-modal .booking-request-content .request-modal-footer .button { padding-inline: 12px; font-size: 14px; }
+}
