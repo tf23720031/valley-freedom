@@ -465,6 +465,133 @@
   .page-title-row::after { animation: none; }
 }
 
+/* Editorial operator and admin pages. Shared BrandShell navigation remains the site standard. */
+.operator-page,
+.admin-overview,
+.partner-growth-page {
+  --ops-deep: #15525a;
+  --ops-copper: #a67451;
+  --ops-rule: #c6d5d0;
+  background-image: linear-gradient(rgb(21 82 90 / .032) 1px, transparent 1px), linear-gradient(90deg, rgb(21 82 90 / .032) 1px, transparent 1px);
+  background-size: 28px 28px;
+  background-position: 0 5px;
+}
+.operator-page .page-title-row,
+.admin-overview .page-title-row { padding-bottom: 20px; margin-bottom: 22px; border-bottom-color: var(--ops-rule); }
+.operator-page .page-title-row h1,
+.admin-overview .page-title-row h1,
+.partner-growth-page .regional-intro h1 { margin: 8px 0 7px; font-size: clamp(28px, 3.1vw, 40px); line-height: 1.28; letter-spacing: -.035em; font-weight: 500; }
+.operator-page .page-title-row p,
+.admin-overview .page-title-row p,
+.partner-growth-page .regional-intro p { font-size: 15px; line-height: 1.75; }
+.operator-page .page-count, .admin-overview .page-count { font-size: 15px; letter-spacing: .04em; }
+.operator-tabs { flex-wrap: nowrap; gap: clamp(14px, 2.1vw, 28px); margin-bottom: 25px; border-bottom: 1px solid var(--ops-rule); }
+.operator-tabs a, .operator-tabs button { flex: 0 0 auto; padding: 11px 1px 12px; color: #52676b; border-bottom: 2px solid transparent; font-size: 14px; }
+.operator-tabs a.active { color: var(--ops-deep); border-color: var(--ops-copper); }
+.operator-intro {
+  display: grid; grid-template-columns: minmax(0,1fr) minmax(250px,.72fr); align-items: center;
+  gap: clamp(24px,4vw,58px); min-height: 260px; margin: 0 0 24px; padding: clamp(24px,4vw,48px);
+  overflow: hidden; border: 1px solid #c8d6cf; background-color: #f8faf5;
+  background-image: linear-gradient(rgb(21 82 90 / .05) 1px,transparent 1px),linear-gradient(90deg,rgb(21 82 90 / .05) 1px,transparent 1px); background-size: 24px 24px;
+}
+.operator-intro::after { content: ""; grid-column: 2; grid-row: 1; align-self: stretch; min-height: 205px; border: 2px solid var(--ops-copper); background: url('/photos/pomelo-orchard.webp') center 48% / cover no-repeat; box-shadow: 8px 8px 0 #e5ece5; }
+.operator-intro > div { grid-column: 1; grid-row: 1; position: relative; z-index: 1; max-width: 580px; }
+.operator-intro .eyebrow { color: #617d74; font-size: 12px; letter-spacing: .08em; }
+.operator-intro h2 { margin: 10px 0 8px; color: #123e43; font-size: clamp(24px,2.5vw,34px); letter-spacing: -.025em; line-height: 1.4; }
+.operator-intro p { max-width: 48ch; color: #62736a; line-height: 1.7; }
+.operator-date { display: none; }
+.operator-stats { margin: 0 0 30px; border-block-color: #b8cbc3; }
+.operator-stats > div { padding: 17px clamp(12px,1.6vw,22px); }
+.operator-stats span, .operator-stats > div > small { color: #657a72; font-size: 13px; }
+.operator-stats b { color: #15525a; font: 500 clamp(25px,2.5vw,34px) var(--font-latin); }
+.operator-impact { margin: 0 0 34px; padding: 16px 0 17px; border-block: 1px solid #cad8d1; background: transparent; }
+.operator-impact .eyebrow { color: #71867e; font-size: 11px; }
+.operator-impact p { color: #304d4d; font-size: 17px; line-height: 1.7; }
+.operator-impact strong { color: #15525a; }
+.operator-recent { margin-top: 30px; }
+.operator-recent .section-heading h2, .operator-subheading h2 { font-size: clamp(21px,2vw,27px); }
+.operator-booking-row { align-items: center; padding: clamp(15px,2vw,22px); border: 1px solid #d0ded9; background: #fffefa; }
+.operator-booking-row + .operator-booking-row { margin-top: 12px; }
+.operator-bookings > h3 { margin: 25px 0 12px; color: #315357; font-size: 18px; font-weight: 500; }
+.operator-row-actions { gap: 9px; }
+.operator-catalog { gap: clamp(22px,3.5vw,48px); }
+.catalog-list { border-top: 1px solid #bdcec7; }
+.catalog-row { border-bottom-color: #cbd8d2; background: rgb(255 254 250 / .72); }
+.operator-forms .admin-form, .operator-task-layout .admin-form, .application-review {
+  border: 1px solid #cbd8d2; border-top: 2px solid var(--ops-deep); background-color: #fffefa;
+  background-image: linear-gradient(rgb(21 82 90 / .025) 1px,transparent 1px),linear-gradient(90deg,rgb(21 82 90 / .025) 1px,transparent 1px); background-size: 22px 22px;
+}
+.operator-forms .admin-form h3, .operator-task-layout .admin-form h3, .application-review h3 { color: #153e43; font-size: 21px; font-weight: 500; }
+.operator-task-layout { gap: clamp(22px,3.5vw,48px); }
+.application-review { padding: clamp(16px,2vw,26px); }
+.application-row { padding: 16px 0; border-color: #cfdbd5; }
+.application-row b { color: #23484c; font-size: 16px; }
+.application-actions { flex-wrap: wrap; gap: 8px; }
+.task-form .field-label { font-size: 14px; }
+.shop-profile { max-width: none; margin: 0; padding: clamp(22px,4vw,42px); border: 1px solid #cbd8d2; border-top: 2px solid var(--ops-deep); background: #fffefa; box-shadow: none; }
+.shop-profile h2 { margin: 9px 0 5px; color: #153e43; font-size: clamp(24px,2.5vw,32px); line-height: 1.35; }
+.shop-profile > p:not(.source-note) { max-width: 58ch; color: #64756d; line-height: 1.7; }
+.shop-profile form { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 15px 22px; margin-top: 22px; padding-top: 19px; border-top: 1px solid #d2ded8; }
+.shop-profile form .field-label:nth-child(2) { grid-row: span 2; }
+.shop-profile form .field-label:nth-child(2) textarea { min-height: 144px; }
+.shop-profile form .button { grid-column: 2; }
+.shop-profile .source-note { margin-top: 22px; padding: 11px 14px; border-left: 2px solid var(--ops-copper); background: #f0f4ef; color: #62736a; font-size: 13px; line-height: 1.7; }
+.admin-overview .admin-summary-grid { grid-template-columns: repeat(5,minmax(0,1fr)); margin: 14px 0 34px; background: rgb(255 254 250 / .65); }
+.admin-overview .admin-summary-grid article { min-height: 93px; gap: 7px; padding: 14px 15px; }
+.admin-overview .admin-summary-grid article > b { font-size: clamp(23px,2vw,30px); }
+.admin-overview .admin-data-note { margin: 0 0 34px; }
+.admin-partners { padding-top: 8px; }
+.admin-partners .section-heading h2 { font-size: clamp(22px,2.2vw,29px); }
+.admin-shop-row { grid-template-columns: minmax(190px,1.7fr) minmax(130px,.8fr) minmax(150px,.9fr) auto; }
+.partner-status-note { border-left: 2px solid var(--ops-copper); background: #eef3ec; }
+.candidate-venues { border-bottom: 1px solid #cbd8d2; }
+.admin-shortcuts .button { min-height: 46px; }
+.partner-growth-page .regional-intro { max-width:none; margin-bottom:28px; padding:24px clamp(18px,3vw,34px); border-left:2px solid var(--ops-copper); background:linear-gradient(90deg,#eef4ef 0%,rgb(238 244 239 / .75) 62%,rgb(238 244 239 / .1)); }
+.partner-growth-page .regional-intro small { display:block; max-width:88ch; margin-top:9px; color:#65766e; font-size:13px; line-height:1.65; }
+.partner-growth-page .revenue-model-section { border:0; border-block:1px solid #a9c0b8; background:rgb(255 254 250 / .76); }
+.partner-growth-page .revenue-model-section .section-title-row h2, .partner-growth-page .section-title-row h2 { font-size:clamp(22px,2.3vw,30px); }
+.partner-growth-page .revenue-assumption-grid label { font-size:13px; }
+.partner-growth-page .revenue-scenarios article > b { font-size:21px; }
+.partner-growth-page .revenue-month-summary { border-top:1px solid #b9ccc4; background:#edf3ed; }
+.partner-growth-page .impact-table-wrap { border-block:1px solid #bdcec7; }
+.partner-growth-page .impact-table { min-width:940px; }
+.partner-growth-page .program-panel { padding:23px clamp(12px,2vw,24px); border-top-color:#aabfb7; background:rgb(255 254 250 / .52); }
+.partner-growth-page .program-panel h2, .partner-growth-page .enterprise-note h2 { font-size:clamp(21px,2vw,28px); color:#153e43; }
+.partner-growth-page .program-panel > p, .partner-growth-page .enterprise-note p { font-size:15px; }
+.partner-growth-page .enterprise-note { padding:25px 0; border-color:#b9ccc4; }
+@media (max-width:1050px) { .admin-overview .admin-summary-grid { grid-template-columns: repeat(3,minmax(0,1fr)); } }
+@media (max-width:760px) {
+  .operator-page .page-title-row, .admin-overview .page-title-row { grid-template-columns:minmax(0,1fr); }
+  .operator-page .page-title-row h1, .admin-overview .page-title-row h1, .partner-growth-page .regional-intro h1 { font-size:clamp(25px,7vw,32px); }
+  .operator-page .page-count, .admin-overview .page-count { justify-items:start; text-align:left; max-width:none; }
+  .operator-tabs { flex-wrap:wrap; gap:2px 16px; }
+  .operator-tabs a { min-height:42px; }
+  .operator-intro { grid-template-columns:minmax(0,1fr); gap:17px; padding:19px; }
+  .operator-intro::after { grid-column:1; grid-row:2; min-height:clamp(145px,46vw,220px); box-shadow:4px 4px 0 #e5ece5; }
+  .operator-intro > div { grid-column:1; grid-row:1; }
+  .operator-intro h2 { font-size:clamp(22px,6vw,29px); }
+  .operator-stats { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .operator-stats > div { border-bottom:1px solid #d5e0d9; }
+  .operator-stats > div:nth-child(2n) { border-right:0; }
+  .operator-stats > div:nth-last-child(-n+2) { border-bottom:0; }
+  .operator-catalog, .operator-task-layout { grid-template-columns:minmax(0,1fr); }
+  .shop-profile { padding:20px 16px; }
+  .shop-profile form { grid-template-columns:minmax(0,1fr); }
+  .shop-profile form .field-label:nth-child(2) { grid-row:auto; }
+  .shop-profile form .button { grid-column:1; width:100%; }
+  .operator-booking-row { align-items:stretch; }
+  .operator-row-actions { width:100%; }
+  .operator-row-actions .button { flex:1 1 130px; }
+  .admin-overview .admin-summary-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .admin-overview .admin-summary-grid article { min-height:82px; }
+  .admin-shop-row { grid-template-columns:minmax(0,1fr); align-items:start; }
+  .admin-shortcuts { display:grid; grid-template-columns:minmax(0,1fr); }
+  .admin-shortcuts .button { width:100%; }
+  .partner-growth-page .regional-intro { padding:18px 15px; }
+  .partner-growth-page .revenue-model-section { padding:18px 14px; }
+  .partner-growth-page .impact-table { min-width:0; }
+}
+
 .revenue-model-section { margin: 40px 0 58px; padding: clamp(18px, 3.2vw, 36px); border: 1px solid #c7d7d6; border-top: 3px solid #15525a; background: #f7f8f1; }
 .revenue-model-section .section-title-row { align-items: start; margin-bottom: 22px; }
 .revenue-model-section .section-title-row h2 { margin: 8px 0; color: #123e43; font-size: clamp(27px, 3.2vw, 38px); }
