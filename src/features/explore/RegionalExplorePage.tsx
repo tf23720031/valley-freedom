@@ -12,8 +12,8 @@ import { recordPlaceStamp, ratePlace } from '../../domain/routeRewards'
 
 function PlaceCard({ place }: { place: Place }) {
   return <Link to={`/places/${place.id}`} className="place-card">
-    <div className="place-card-photo"><img src={place.photo} alt=""/><span>氛圍參考照・非場域實景</span></div>
-    <div className="place-card-body"><span>{place.regionName}</span><h3>{place.name}</h3><p>{place.verifiedFacts[0] ?? '候選參考名單，場域資料待查證。'}</p><b>查看已確認資訊 <ArrowRight size={16}/></b></div>
+    <div className="place-card-photo"><img src={place.id==='muri-sunshine'?'/photos/pomelo-orchard.webp':place.id==='bamboo-symphony'||place.id==='kanasui'?'/photos/bamboo-weaving.webp':place.photo} alt=""/><span>氛圍參考照・非場域實景</span></div>
+    <div className="place-card-body"><span>{place.regionName}</span><h3>{place.name}</h3><p>{place.verifiedFacts[0] ?? '候選參考名單，場域資料待查證。'}</p><small className="place-data-state">{place.verificationStatus==='partial'?'部分資訊已核對':place.coordinates?'位置已核對':'位置待確認'}</small><b>查看已確認資訊 <ArrowRight size={16}/></b></div>
   </Link>
 }
 
@@ -61,11 +61,11 @@ export function RegionalExplorePage() {
   }
 
   const regions = regionId ? districts.filter((region) => region.id === regionId) : districts
-  return <section className="regional-explore editorial-wrap">
-    <header className="regional-intro"><span className="eyebrow">VALLEY FREEDOM / PLACE JOURNAL</span><h1>沿著花東走</h1><p>四條路線，17 個候選場域。先看地方，再決定怎麼走。</p><small>名單為旅客探索參考，不代表平台已合作、可預約或提供體驗。場域資訊逐筆標示查證狀態。</small><Link className="button button-outline explore-map-entry" to="/explore/map">在花東地圖上探索 <ArrowRight size={16}/></Link></header>
-    {!regionId && <nav className="region-index" aria-label="花東地區">{districts.map((region, index) => <a key={region.id} href={`#${region.id}`}><span>0{index + 1}</span>{region.name}</a>)}</nav>}
-    <div className="region-collection">{regions.map((region, index) => <section className={`region-section region-layout-${index}`} id={region.id} key={region.id}>
-      <div className="region-heading"><img src={region.photo} alt=""/><span className="region-road">{region.road}</span><div><span>0{districts.indexOf(region) + 1} / 花東地區</span><h2>{region.name}</h2><p>{region.intro}</p></div></div>
+  return <section className="regional-explore journal-page discovery-journal">
+    <header className="discovery-hero"><div className="regional-intro"><span className="eyebrow">VALLEY FREEDOM / PLACE JOURNAL</span><h1 aria-label="沿著花東走">沿著<br/>花東走</h1><p>四條路線，從想去的地方開始。17 個候選場域，先看資料，再安排旅程。</p><small>名單為旅客探索參考，不代表平台已合作、可預約或提供體驗。場域資訊逐筆標示查證狀態。</small><Link className="button button-outline explore-map-entry" to="/explore/map">在花東地圖上探索 <ArrowRight size={16}/></Link></div><div className="discovery-collage"><figure><img src="/photos/valley-hero.webp" alt="花東縱谷氛圍參考"/><figcaption>花東縱谷・氛圍參考照</figcaption></figure><figure><img src="/photos/east-coast-hero.png" alt="東海岸氛圍參考"/><figcaption>東海岸・氛圍參考照</figcaption></figure></div></header>
+    {!regionId && <nav className="region-index" aria-label="花東地區">{districts.map((region) => <a key={region.id} href={`#${region.id}`}><b>{region.name}</b><small>{region.planning.mood}</small></a>)}</nav>}
+    <JournalWave/><div className="region-collection">{regions.map((region, index) => <section className={`region-section region-layout-${index}`} id={region.id} key={region.id}>
+      <div className="region-heading"><img src={region.id==='valley-9'?'/photos/valley-hero.webp':region.id==='taroko'?'/photos/valley-trail.webp':'/photos/east-coast-hero.png'} alt={region.name+'氛圍參考'}/><small className="region-photo-note">氛圍參考照・非場域實景</small><span className="region-road">{region.road}</span><div><span>FIELD NOTES / 花東地區</span><h2>{region.name}</h2><p>{region.intro}</p></div></div>
       <aside className="region-planning"><span className="eyebrow">ROUTE NOTES / 規劃示意</span><div><b>建議停留</b><span>{region.planning.stay}</span></div><div><b>交通提示</b><span>{region.planning.transport}</span></div><div><b>路線氣質</b><span>{region.planning.mood}</span></div><small>停留時間為展示用規劃建議，交通、場域開放資訊請出發前自行確認。</small></aside>
       <div className="region-place-list">{region.places.map((item) => <PlaceCard key={item.id} place={item}/>)}</div>
       {regionId && <Link className="back-link" to="/explore"><ArrowLeft size={16}/>看全部路線</Link>}

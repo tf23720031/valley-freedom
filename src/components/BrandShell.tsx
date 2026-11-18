@@ -12,8 +12,8 @@ import { LoginModal } from '../features/auth/LoginPage'
 
 const links: Record<Role, Array<[string, string]>> = {
   traveler: [['/explore', '沿著花東走'], ['/explore/map', '路線地圖'], ['/experiences', '地方體驗'], ['/companions', '找在地旅伴'], ['/companions/requests', '旅伴需求廣場'], ['/itinerary', '我的自由行'], ['/bookings', '我的預約']],
-  companion: [['/explore', '沿著花東走'], ['/companions/requests', '公開需求'], ['/companion', '旅伴工作台'], ['/youth', '協作任務'], ['/experiences', '地方體驗']],
-  operator: [['/explore', '沿著花東走'], ['/operator', '營運概覽'], ['/operator/experiences', '體驗與場次'], ['/operator/bookings', '預約管理'], ['/operator/tasks', '協作任務'], ['/operator/shop', '店家資料'], ['/co-create', '新體驗共創']],
+  companion: [['/explore', '沿著花東走'], ['/companions/requests', '公開需求'], ['/companion', '旅伴工作臺'], ['/youth', '協作任務'], ['/experiences', '地方體驗']],
+  operator: [['/explore', '沿著花東走'], ['/operator', '營運概覽'], ['/operator/experiences', '體驗與場次'], ['/operator/bookings', '預約管理'], ['/operator/tasks', '協作任務'], ['/operator/shop', '店家資料'], ['/co-create', '新體驗共作']],
   admin: [['/explore', '沿著花東走'], ['/admin', '全平台總覽'], ['/admin/growth', '店家成長管理']],
 }
 const roleLabels: Record<Role, string> = { traveler: '旅客', companion: '在地旅伴', operator: '業者', admin: '管理員' }

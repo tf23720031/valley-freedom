@@ -14,6 +14,7 @@ describe('companion profile workspace', () => {
     const user = userEvent.setup()
     render(<AppStateProvider><FeedbackProvider><MemoryRouter initialEntries={['/companion']}><Routes><Route path="/companion" element={<CompanionPage/>}/></Routes></MemoryRouter></FeedbackProvider></AppStateProvider>)
     await user.click(screen.getByRole('button', { name: '旅伴端：接單管理' }))
+    await user.click(screen.getByText('編輯旅伴資料', { selector: 'summary' }))
     await user.clear(screen.getByRole('textbox', { name: '照片網址' }))
     await user.paste('https://images.example.test/companion.jpg')
     await user.clear(screen.getByRole('textbox', { name: '個人介紹（100字內）' }))
