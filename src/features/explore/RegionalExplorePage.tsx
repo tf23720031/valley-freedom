@@ -1,3 +1,4 @@
+import { JournalWave } from '../../components/JournalHero'
 import { getDemoServiceDate } from '../../domain/fixtures'
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
@@ -38,12 +39,11 @@ export function RegionalExplorePage() {
     const connectedOffers = state.partnerLinks.filter((link) => link.active && (link.anchorPlaceId === place.id || link.smallPlaceId === place.id))
     const stampVisit = () => { const result = dispatch((current) => recordPlaceStamp(current, place.id)); notify(result.ok ? result.value.routeRewards.length > state.routeRewards.length ? '已記錄示意場域紀錄，NT$200 旅伴折抵已解鎖。' : '已記錄示意場域紀錄。' : result.error.message, result.ok ? 'success' : 'error') }
     const submitRating = (rating: number) => { const result = dispatch((current) => ratePlace(current, place.id, rating)); notify(result.ok ? '已保存本裝置的示意評分。' : result.error.message, result.ok ? 'success' : 'error') }
-    return <section className="place-detail editorial-wrap">
+    return <section className="place-detail journal-page place-journal">
       <Link className="back-link" to={`/explore/${place.regionId}`}><ArrowLeft size={16}/>返回{place.regionName}</Link>
-      <div className="place-detail-hero"><img src={place.photo} alt=""/><span>氛圍參考照・非場域實景</span></div>
-      <div className="place-detail-copy"><span className="eyebrow">{place.regionName} / 候選參考場域</span><h1>{place.name}</h1>
-        <p className="place-region-note"><MapPin size={17}/>{place.regionName}（依本次提供的區域名單分類；精確位置以已查證資料為準）</p>
-        <div className="place-facts"><h2>已確認資訊</h2>{place.verifiedFacts.length ? <ul>{place.verifiedFacts.map((fact) => <li key={fact}>{fact}</li>)}</ul> : <p>目前沒有足夠來源確認場域簡介與精確地點，資料待查證。</p>}
+      <header className="place-journal-hero"><div><span className="eyebrow">PLACE JOURNAL / {place.regionName}</span><h1>{place.name}</h1><p className="place-region-note"><MapPin size={17}/>{place.regionName}</p></div><figure><img src={place.id==='muri-sunshine' ? '/photos/pomelo-orchard.webp' : place.id==='kanasui' ? '/photos/bamboo-weaving.webp' : place.photo} alt="場域氛圍參考，非實景查證照片"/><figcaption>氛圍參考照・非場域實景</figcaption></figure></header><JournalWave/>
+      <div className="place-detail-copy">
+        <div className="place-facts"><h2>場域資料</h2>{place.verifiedFacts.length ? <ul>{place.verifiedFacts.map((fact) => <li key={fact}>{fact}</li>)}</ul> : <p>目前沒有足夠來源確認場域簡介與精確地點，資料待查證。</p>}
           {place.address && <p><b>公開地點資訊：</b>{place.address}</p>}
           <p><b>活動資訊：</b>{place.activityInfo.length ? place.activityInfo.join('；') : '尚未查證，不列活動或場次。'}</p>
           <p><b>公開預約管道：</b>{place.bookingUrl ? <a href={place.bookingUrl} target="_blank" rel="noreferrer">前往公開頁面 <ArrowRight size={14}/></a> : bookingLabel}</p>
@@ -51,7 +51,7 @@ export function RegionalExplorePage() {
           <p className="verification-state">資料查核狀態：{place.verificationStatus === 'verified' ? '公開來源已核對' : place.verificationStatus === 'partial' ? '部分資訊已核對，細節待查' : '候選資料待查證'}</p>
           {place.sources.length > 0 && <div className="place-source-list"><b>資料來源</b>{place.sources.map((source) => <a key={source.url} href={source.url} target="_blank" rel="noreferrer">{source.label} <ArrowRight size={13}/></a>)}</div>}
         </div>
-        <div className="place-itinerary-actions"><label className="field-label"><span><CalendarDays size={16}/>加入哪一天</span><input type="date" value={date} onChange={(event) => setDate(event.target.value)}/></label><button className="button button-primary" onClick={add}>加入我的行程</button><button className="button button-outline" onClick={searchNearby}>在這附近找旅伴</button></div>
+        <div className="place-itinerary-actions"><h2>安排這一站</h2><label className="field-label"><span><CalendarDays size={16}/>加入哪一天</span><input type="date" value={date} onChange={(event) => setDate(event.target.value)}/></label><button className="button button-primary" onClick={add}>加入我的行程</button><button className="button button-outline" onClick={searchNearby}>在這附近找旅伴</button><small>加入行程草稿不等於預約。</small></div>
         <section className="place-stamp-panel"><div><span className="eyebrow">造訪紀錄 / 展示用</span><h2>{stamped ? '這個場域已記錄' : '到訪後留下路線紀錄'}</h2><p>原型以手動按鈕模擬消費或體驗完成，沒有掃碼驗證或店家核銷。不同場域累積兩枚，可解鎖旅伴折抵示意券。</p></div><button className="button button-primary" disabled={stamped} onClick={stampVisit}>{stamped ? '已取得示意紀錄' : '模擬完成消費／體驗並集章'}</button></section>
         {stamped && nextPlace && <section className="next-place-note"><span className="eyebrow">下一站推薦 / 同路線示意</span><b>{nextPlace.name}</b><p>{nextPlace.verifiedFacts[0] ?? '候選參考場域，資訊待查證。'}後續活動與營業資訊請先向場域確認。</p><Link to={`/places/${nextPlace.id}`}>查看下一站 <ArrowRight size={15}/></Link></section>}
         {connectedOffers.length > 0 && <section className="next-place-note"><span className="eyebrow">店家串連方案 / 示意</span>{connectedOffers.map((link) => <div key={link.id}><b>{districts.flatMap((region) => region.places).find((item) => item.id === (link.anchorPlaceId === place.id ? link.smallPlaceId : link.anchorPlaceId))?.name}</b><p>{link.description}；目前未取得合作同意，優惠尚未生效。</p></div>)}</section>}

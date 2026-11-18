@@ -18,5 +18,6 @@ import './styles/experience-journal.css'
 import './styles/itinerary-journal.css'
 import './styles/stable-dialogs.css'
 import './styles/map-journal.css'
+import './styles/account-journal.css'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(<React.StrictMode><App /></React.StrictMode>)
