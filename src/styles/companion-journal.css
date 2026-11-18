@@ -5,6 +5,7 @@
   --journal-muted: #5b6157;
   --journal-rule: #c4c7b8;
   --journal-accent: #ad643e;
+  --journal-control-height: 62px;
   width: 100%;
   max-width: none;
   margin: 0;
@@ -36,14 +37,14 @@
 .journal-section-title > small { margin-left: auto; color: var(--journal-muted); font-size: 12px; }
 .journal-filter-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); align-items: start; gap: 18px 22px; }
 .companion-journal .field-label { min-width: 0; gap: 7px; margin: 0; color: var(--journal-ink); font-size: 13px; font-weight: 600; }
-.companion-journal .field-label input, .companion-journal .field-label select { width: 100%; max-width: 100%; min-width: 0; min-height: 46px; padding: 9px 12px; border: 1px solid #a5b1a5; border-radius: 0; background-color: rgb(255 255 255 / .3); color: var(--journal-ink); font-size: 15px; font-weight: 400; }
+.companion-journal .field-label input, .companion-journal .field-label select { width: 100%; max-width: 100%; min-width: 0; height: var(--journal-control-height); min-height: var(--journal-control-height); padding: 9px 12px; border: 1px solid #a5b1a5; border-radius: 0; background-color: rgb(255 255 255 / .3); color: var(--journal-ink); font-size: 15px; font-weight: 400; }
 .companion-journal .field-label select:disabled { opacity: 1; color: #64685e; background-color: #e7e5db; border-color: #c6c8bc; }
 .companion-journal .field-label > small { font-size: 11px; font-weight: 400; line-height: 1.5; color: var(--journal-muted); }
 .journal-filter-route, .journal-filter-date { grid-column: span 3; }
 .journal-filter-experience { grid-column: span 6; }
 .companion-journal .journal-filter-duration { grid-column: span 5; display: grid; grid-template-columns: 1fr 1fr; align-self: stretch; gap: 8px; min-width: 0; margin: 0; padding: 0; }
 .companion-journal .journal-filter-duration legend { float: none; width: auto; margin: 0 0 7px; padding: 0; color: var(--journal-ink); font-size: 13px; font-weight: 600; line-height: 1.55; }
-.companion-journal .journal-filter-duration label { align-items: center; gap: 8px; min-height: 46px; margin: 0; padding: 8px 10px; border: 1px solid #a5b1a5; background: transparent; box-shadow: none; }
+.companion-journal .journal-filter-duration label { align-items: center; gap: 8px; height: var(--journal-control-height); min-height: var(--journal-control-height); margin: 0; padding: 8px 10px; border: 1px solid #a5b1a5; background: transparent; box-shadow: none; }
 .companion-journal .journal-filter-duration label:has(input:checked) { border-color: var(--journal-ink); background: #e7ebce; box-shadow: inset 3px 0 var(--journal-ink); }
 .companion-journal .journal-filter-duration input { flex: 0 0 auto; width: 16px; height: 16px; margin: 0; accent-color: var(--journal-ink); }
 .companion-journal .journal-filter-duration label span { gap: 2px; }
