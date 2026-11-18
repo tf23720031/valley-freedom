@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useSearchParams } from 'react-router-dom'
 import { ArrowRight, CalendarDays, Clock3, Languages, MapPin } from 'lucide-react'
 import { useAppState } from '../../store/AppStateProvider'
@@ -111,7 +112,8 @@ export function CompanionSearchPage() {
         </article>) : <div className="empty-state"><span className="empty-number">／</span><h2>目前沒有符合的旅伴</h2><p>試著更改日期、服務時段、語言或服務區域。</p></div>}
       </div>
     </div>
-    {modal && selectedPerson && <>
+    {/* Keep fixed positioning outside the transformed page/route animation containers. */}
+    {modal && selectedPerson && createPortal(
       <div className="modal fade show d-block booking-request-modal" role="dialog" aria-modal="true" aria-labelledby="request-modal-title" onMouseDown={(event) => { if (event.target === event.currentTarget) setModal(false) }}>
         <div className="modal-dialog modal-dialog-centered modal-dialog-scrollable booking-request-dialog">
           <form ref={requestDialog} tabIndex={-1} className="modal-content booking-request-content" onSubmit={send}>
@@ -126,8 +128,8 @@ export function CompanionSearchPage() {
         <footer className="modal-footer request-modal-footer"><div className="request-estimate"><span>預約總額</span><b>NT$ {estimate?.gross.toLocaleString() ?? '—'}</b></div><button type="submit" className="btn btn-primary button button-primary full-button" disabled={!estimate}>送出預約需求 <ArrowRight size={15}/></button></footer>
       </form>
         </div>
-      </div>
-      <div className="modal-backdrop fade show booking-request-backdrop" onClick={() => setModal(false)}></div>
-    </>}
+      </div>,
+      document.body,
+    )}
   </section>
 }

@@ -12,7 +12,7 @@ test('primary workspaces fit the active desktop or mobile viewport', async ({ pa
 
 test('mobile companion search places the full-width photo above service information', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 })
-  await page.goto('/companions?destination=%E7%91%9E%E7%A9%97&date=2026-11-15&startTime=14%3A00&duration=90&language=%E8%8B%B1%E6%96%87&service=language-support')
+  await page.goto('/companions')
   const card = page.locator('.companion-result').first()
   const boxes = await Promise.all([card.locator('img').boundingBox(), card.locator('.companion-result-main').boundingBox()])
   expect(boxes[0]).not.toBeNull()

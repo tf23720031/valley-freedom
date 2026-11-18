@@ -70,12 +70,34 @@ describe('shared LocalStorage application store', () => {
     expect(migrated.role).toBe('companion')
     expect(migrated.bookings).toHaveLength(1)
     expect(migrated.companions.length).toBeGreaterThanOrEqual(3)
-    expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).schemaVersion).toBe(4)
+    expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).schemaVersion).toBe(5)
   })
 
   it('routes all updates through a result-returning dispatcher', () => {
     const result = dispatch((state) => ({ ok: true, value: { ...state, role: 'operator' } }))
     expect(result.ok).toBe(true)
     expect(getSnapshot().role).toBe('operator')
+  })
+
+  it('removes obsolete hourly rates without replacing the saved profile or request totals', () => {
+    const previous = createInitialState()
+    const profile = { ...previous.companions[0], ratePerHour: 1250, bio: '我的介紹' }
+    previous.companions[0] = profile
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(previous))
+    resetStoreForTests()
+    expect(getSnapshot().companions[0]).toMatchObject({ bio: '我的介紹' })
+    expect(getSnapshot().companions[0]).not.toHaveProperty('ratePerHour')
+    expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).companions[0]).not.toHaveProperty('ratePerHour')
+  })
+
+  it('refreshes expired demo sessions while preserving dates attached to traveler bookings', () => {
+    const previous = createInitialState()
+    previous.sessions[0].date = '2000-01-01'
+    previous.sessions[1].date = '2000-01-02'
+    previous.bookings.push({ ...previous.bookings[0], id: 'owned', sessionId: previous.sessions[1].id, travelerId: previous.travelerId })
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(previous))
+    resetStoreForTests()
+    expect(getSnapshot().sessions[0].date).toBe(createInitialState().sessions[0].date)
+    expect(getSnapshot().sessions[1].date).toBe('2000-01-02')
   })
 })

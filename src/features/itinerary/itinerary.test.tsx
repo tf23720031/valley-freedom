@@ -1,3 +1,4 @@
+import { getDemoServiceDate } from '../../domain/fixtures'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { cleanup } from '@testing-library/react'
 import { render, screen, waitFor } from '@testing-library/react'
@@ -16,7 +17,7 @@ describe('itinerary draft UI', () => {
     expect(screen.getByRole('heading', { name: '這裡有空' })).toBeInTheDocument()
     const companionEntry = screen.getByRole('link', { name: '要找旅伴嗎' })
     expect(companionEntry).toHaveAttribute('href', expect.stringContaining('/companions?'))
-    expect(companionEntry).toHaveAttribute('href', expect.stringContaining('date=2026-11-14'))
+    expect(companionEntry).toHaveAttribute('href', expect.stringContaining(`date=${getDemoServiceDate()}`))
     expect(companionEntry).toHaveAttribute('href', expect.stringContaining('startTime=14%3A00'))
     expect(companionEntry).toHaveAttribute('href', expect.stringContaining('destination='))
     expect(document.querySelectorAll('.timeline-empty-photos span')).toHaveLength(3)
@@ -28,7 +29,7 @@ describe('itinerary draft UI', () => {
     await user.click(screen.getAllByRole('button', { name: /新增安排/ })[0])
     await user.click(screen.getByRole('button', { name: '找在地旅伴' }))
     await waitFor(() => expect(screen.getByTestId('companion-query')).toBeInTheDocument())
-    expect(screen.getByTestId('companion-query').textContent).toContain('date=2026-11-14')
+    expect(screen.getByTestId('companion-query').textContent).toContain(`date=${getDemoServiceDate()}`)
     expect(screen.getByTestId('companion-query').textContent).toContain('startTime=14%3A00')
     expect(screen.getByTestId('companion-query').textContent).toContain('duration=90')
     expect(screen.getByTestId('companion-query').textContent).toContain('language=英文')

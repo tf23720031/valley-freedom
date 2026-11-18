@@ -1,5 +1,5 @@
 import type { AppState, DomainResult } from '../domain/types'
-import { createInitialState } from '../domain/fixtures'
+import { createInitialState, getDemoServiceDate } from '../domain/fixtures'
 import type { Companion, Role } from '../domain/types'
 import { experiencePhotoSet } from '../domain/photoSources'
 import { DEFAULT_REVENUE_ASSUMPTIONS } from '../domain/revenueShare'
@@ -29,6 +29,9 @@ function migratePhotoAssets(value: AppState): AppState {
     return { ...experience, image: experiencePhotoSet[index] ?? experiencePhotoSet[0] }
   })
   const companions = value.companions.map((companion, index) => {
+    const profile = { ...companion } as Companion & { ratePerHour?: number }
+    if ('ratePerHour' in profile) { delete profile.ratePerHour; changed = true }
+    companion = profile
     if (!companion.avatar.startsWith('/photos/')) return companion
     changed = true
     return { ...companion, avatar: ['https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&h=700&q=85', 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=600&h=700&q=85', 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=600&h=700&q=85'][index] }
@@ -55,8 +58,7 @@ function migrateState(raw: Record<string, unknown>): AppState {
   if ((raw.schemaVersion === 4 || raw.schemaVersion === 5) && Array.isArray(raw.companions) && Array.isArray(raw.serviceRequests)) {
     const saved = raw as unknown as AppState
     const freshCompanionsById = new Map(fresh.companions.map((person) => [person.id, person]))
-    const today = new Date()
-    const todayISO = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
+    const todayISO = getDemoServiceDate(0)
     const companionsWithCurrentDemoSlots = saved.companions.map((person) => {
       const demo = freshCompanionsById.get(person.id)
       if (!person.demo || !demo || !person.availability.length || person.availability.some((slot) => slot.date >= todayISO)) return person
@@ -64,9 +66,15 @@ function migrateState(raw: Record<string, unknown>): AppState {
     })
     const savedIds = new Set(saved.companions.map((person) => person.id))
     const missingDemoCompanions = fresh.companions.filter((person) => !savedIds.has(person.id))
+    const sessions = saved.sessions.map((session) => {
+      const demo = fresh.sessions.find((item) => item.id === session.id)
+      const hasTravelerBooking = saved.bookings.some((booking) => booking.sessionId === session.id && booking.travelerId === saved.travelerId)
+      return demo && session.date < todayISO && !hasTravelerBooking ? { ...session, date: demo.date } : session
+    })
     return {
       ...saved,
       schemaVersion: 5,
+      sessions,
       revenueAssumptions: saved.revenueAssumptions ?? { ...DEFAULT_REVENUE_ASSUMPTIONS },
       serviceRequests: saved.serviceRequests.map((request) => ({ ...request, legacyEstimate: request.revenueSnapshot ? request.legacyEstimate : true })),
       companions: [...companionsWithCurrentDemoSlots, ...missingDemoCompanions],

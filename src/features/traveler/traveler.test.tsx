@@ -5,7 +5,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { AppStateProvider } from '../../store/AppStateProvider'
 import { FeedbackProvider } from '../../components/Feedback'
 import { resetStoreForTests } from '../../store/appStore'
-import { createInitialState } from '../../domain/fixtures'
+import { createInitialState, getDemoServiceDate } from '../../domain/fixtures'
 import { ExperienceDetailPage, BookingsPage } from './TravelerPages'
 
 function renderAt(path: string, page: React.ReactNode) {
@@ -17,8 +17,10 @@ describe('traveler booking flow', () => {
   it('shows a date calendar with unavailable days disabled and explains companion seats', () => {
     renderAt('/experiences/experience-1', <ExperienceDetailPage />)
     expect(screen.getByRole('grid', { name: /選擇體驗日期/ })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /2026年11月14日.*有場次/ })).toBeEnabled()
-    expect(screen.getByRole('button', { name: /2026年11月13日.*無場次/ })).toBeDisabled()
+    const [year, month, day] = getDemoServiceDate().split('-').map(Number)
+    expect(screen.getByRole('button', { name: new RegExp(`${year}年${month}月${day}日.*有場次`) })).toBeEnabled()
+    expect(screen.getAllByRole('button', { name: /無場次/ }).length).toBeGreaterThan(0)
+    for (const button of screen.getAllByRole('button', { name: /無場次/ })) expect(button).toBeDisabled()
     expect(screen.getByText(/同行旅伴若參加活動，也占用一個名額/)).toBeInTheDocument()
   })
 

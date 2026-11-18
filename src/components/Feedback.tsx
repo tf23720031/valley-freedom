@@ -11,7 +11,7 @@ export function FeedbackProvider({ children }: { children: React.ReactNode }) {
     setToasts((current) => [...current, { id, message, tone }])
     window.setTimeout(() => setToasts((current) => current.filter((toast) => toast.id !== id)), 3600)
   } }), [])
-  return <FeedbackContext.Provider value={value}>{children}<div className="toast-region" aria-live="polite">{toasts.map((toast) => <div className={`toast toast-${toast.tone}`} key={toast.id}><Check size={16} aria-hidden="true" />{toast.message}<button aria-label="關閉通知" onClick={() => setToasts((items) => items.filter((item) => item.id !== toast.id))}><X size={15} /></button></div>)}</div></FeedbackContext.Provider>
+  return <FeedbackContext.Provider value={value}>{children}<div className="toast-region" aria-live="polite">{toasts.map((toast) => <div className={`toast show toast-${toast.tone}`} key={toast.id}><Check size={16} aria-hidden="true" />{toast.message}<button aria-label="關閉通知" onClick={() => setToasts((items) => items.filter((item) => item.id !== toast.id))}><X size={15} /></button></div>)}</div></FeedbackContext.Provider>
 }
 export function useNotify() {
   const context = useContext(FeedbackContext)

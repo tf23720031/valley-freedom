@@ -657,7 +657,6 @@
 .booking-request-content .request-estimate span { color: #69776d; font-size: 12px; }
 .booking-request-content .request-estimate b { color: #123e43; font-size: 22px; }
 .booking-request-content .request-modal-footer .button { min-height: 46px; margin: 0; white-space: normal; }
-.booking-request-backdrop { z-index: 1190; padding: 0; background: rgb(10 35 36 / .56); backdrop-filter: blur(7px); }
 @media (max-width: 480px) {
   .booking-request-modal { padding: 8px; }
   .booking-request-dialog { width: 100%; max-width: none; }

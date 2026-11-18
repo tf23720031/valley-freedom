@@ -1,22 +1,22 @@
 import { describe, expect, it } from 'vitest'
-import { createInitialState } from './fixtures'
-import { cancelServiceRequest, companionRespond, createServiceRequest, estimateCompanionFee, matchingCompanions, travelerFinalizeRequest, updateCompanionProfile } from './companions'
+import { createInitialState, getDemoServiceDate } from './fixtures'
+import { cancelServiceRequest, companionRespond, createServiceRequest, matchingCompanions, travelerFinalizeRequest, updateCompanionProfile } from './companions'
 
-const criteria = { destination: '瑞穗', date: '2026-11-15', startTime: '14:00', durationMinutes: 90, partySize: 2, language: '英文', service: 'language-support' as const }
+const criteria = { destination: '瑞穗', date: getDemoServiceDate(), startTime: '14:00', durationMinutes: 240, partySize: 2, language: '英文', service: 'language-support' as const }
 describe('local companion matching and request workflow', () => {
-  it('validates and persists a companion hourly rate and short bio', () => {
-    const result = updateCompanionProfile(createInitialState(), { companionId: 'companion-lin', avatar: 'https://images.example.test/lin.jpg', bio: '熟悉瑞穗田間小路。', ratePerHour: 1250 })
+  it('validates and persists a companion profile photo and short bio', () => {
+    const result = updateCompanionProfile(createInitialState(), { companionId: 'companion-lin', avatar: 'https://images.example.test/lin.jpg', bio: '熟悉瑞穗田間小路。' })
     expect(result.ok).toBe(true)
-    if (result.ok) expect(result.value.companions[0]).toMatchObject({ avatar: 'https://images.example.test/lin.jpg', bio: '熟悉瑞穗田間小路。', ratePerHour: 1250 })
-    expect(updateCompanionProfile(createInitialState(), { companionId: 'companion-lin', avatar: 'photo', bio: '旅'.repeat(101), ratePerHour: 900 }).ok).toBe(false)
+    if (result.ok) expect(result.value.companions[0]).toMatchObject({ avatar: 'https://images.example.test/lin.jpg', bio: '熟悉瑞穗田間小路。' })
+    expect(updateCompanionProfile(createInitialState(), { companionId: 'companion-lin', avatar: 'photo', bio: '旅'.repeat(101) }).ok).toBe(false)
   })
   it('matches by location, language, service, and available duration', () => {
-    expect(matchingCompanions(createInitialState(), criteria).map((person) => person.id)).toEqual(['companion-lin', 'companion-chen', 'companion-huang', 'companion-zhao', 'companion-lin-yi', 'companion-yang'])
+    expect(matchingCompanions(createInitialState(), criteria).map((person) => person.id)).toEqual(['companion-lin', 'companion-chen', 'companion-huang', 'companion-zhao', 'companion-yang'])
   })
   it('matches the selected county or the full Hualien–Taitung region', () => {
     const state = createInitialState()
     expect(matchingCompanions(state, { ...criteria, destination: '臺東縣' }).map((person) => person.id)).toEqual(['companion-lin-taitung', 'companion-hsu-south'])
-    expect(matchingCompanions(state, { ...criteria, destination: '花東全區' })).toHaveLength(8)
+    expect(matchingCompanions(state, { ...criteria, destination: '花東全區' })).toHaveLength(7)
   })
   it('creates a request and adds it to a multi-day itinerary only after traveler confirmation', () => {
     const seeded = createInitialState()
@@ -32,17 +32,21 @@ describe('local companion matching and request workflow', () => {
     expect(confirmed.ok).toBe(true)
     if (!confirmed.ok) return
     expect(confirmed.value.serviceRequests[0].status).toBe('confirmed')
-    expect(confirmed.value.itineraries[0].items[0]).toMatchObject({ kind: 'companion', date: criteria.date, startTime: '14:00', endTime: '15:30' })
+    expect(confirmed.value.itineraries[0].items[0]).toMatchObject({ kind: 'companion', date: criteria.date, startTime: '14:00', endTime: '18:00' })
   })
-  it('rounds requested durations up to the next 30-minute price unit', () => {
-    expect([15, 20, 23, 24, 30].map((minutes) => estimateCompanionFee(minutes, 900))).toEqual([450, 450, 450, 450, 450])
-    expect([31, 45, 50, 55, 60].map((minutes) => estimateCompanionFee(minutes, 900))).toEqual([900, 900, 900, 900, 900])
-    expect(estimateCompanionFee(61, 900)).toBe(1350)
+  it('charges the half-day and full-day package per traveler', () => {
+    const state = createInitialState()
+    for (const [durationMinutes, startTime, price] of [[240, '14:00', 2000], [480, '09:00', 3600]] as const) {
+      const result = createServiceRequest(state, { ...criteria, durationMinutes, startTime, travelerId: state.travelerId, companionId: 'companion-lin', meetingPoint: '瑞穗車站', notes: '' })
+      expect(result.ok).toBe(true)
+      if (result.ok) expect(result.value.serviceRequests[0]).toMatchObject({ price, durationMinutes, revenueSnapshot: { gross: price, partySize: 2 } })
+    }
   })
-  it('accepts a 15-minute request and bills the 30-minute minimum', () => {
-    const seeded = createInitialState()
-    const created = createServiceRequest(seeded, { ...criteria, durationMinutes: 15, travelerId: seeded.travelerId, companionId: 'companion-lin', meetingPoint: '瑞穗車站', notes: '' })
-    expect(created.ok && created.value.serviceRequests[0].price).toBe(450)
+  it('rejects arbitrary minute-based requests', () => {
+    const state = createInitialState()
+    for (const durationMinutes of [15, 30, 90, 241]) {
+      expect(createServiceRequest(state, { ...criteria, durationMinutes, travelerId: state.travelerId, companionId: 'companion-lin', meetingPoint: '瑞穗車站', notes: '' }).ok).toBe(false)
+    }
   })
   it('blocks overlapping duplicate requests and records cancellation source and reason', () => {
     const seeded = createInitialState()
@@ -60,10 +64,10 @@ describe('local companion matching and request workflow', () => {
     const seeded = createInitialState()
     const created = createServiceRequest(seeded, { ...criteria, travelerId: seeded.travelerId, companionId: 'companion-lin', meetingPoint: '瑞穗車站', notes: '' })
     if (!created.ok) throw new Error('request create failed')
-    const countered = companionRespond(created.value, { requestId: created.valueId!, companionId: 'companion-lin', action: 'counter', startTime: '15:00', durationMinutes: 90, price: 1500, note: '改為三點集合' })
+    const countered = companionRespond(created.value, { requestId: created.valueId!, companionId: 'companion-lin', action: 'counter', startTime: '13:00', durationMinutes: 240, note: '改為一點集合' })
     expect(countered.ok).toBe(true)
     if (!countered.ok) return
     const confirmed = travelerFinalizeRequest(countered.value, { requestId: created.valueId!, travelerId: seeded.travelerId, action: 'confirm' })
-    expect(confirmed.ok && confirmed.value.serviceRequests[0]).toMatchObject({ status: 'confirmed', startTime: '15:00', price: 1500 })
+    expect(confirmed.ok && confirmed.value.serviceRequests[0]).toMatchObject({ status: 'confirmed', startTime: '13:00', price: 2000 })
   })
 })

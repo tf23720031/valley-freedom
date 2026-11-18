@@ -6,7 +6,7 @@ export function RouteTransition({ children }: { children: ReactNode }) {
   const routeRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
     const route = routeRef.current
-    if (!route || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    if (!route || typeof window.matchMedia !== 'function' || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
     const targets = Array.from(route.querySelectorAll<HTMLElement>([
       '.page-title-row', '.section-heading', '.regional-hero', '.detail-layout', '.place-page-copy',
       '.filter-panel', '.search-filter-panel', '.experience-card', '.experience-directory-link',

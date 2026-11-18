@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { createInitialState } from './fixtures'
+import { createInitialState, getDemoServiceDate } from './fixtures'
 import { createServiceRequest } from './companions'
 import { recordPlaceStamp, recordPlaceStampWithPassword } from './routeRewards'
 
@@ -30,10 +30,10 @@ describe('place route rewards', () => {
     const second = recordPlaceStamp(first.value, 'bamboo-symphony')
     if (!second.ok) throw Error(second.error.message)
     const reward = second.value.routeRewards[0]
-    const request = createServiceRequest(second.value, { travelerId: 'traveler-demo', companionId: 'companion-lin', destination: '瑞穗', meetingPoint: '瑞穗車站', date: '2026-11-15', startTime: '14:00', durationMinutes: 90, partySize: 2, language: '英文', service: 'language-support', notes: '', rewardId: reward.id })
+    const request = createServiceRequest(second.value, { travelerId: 'traveler-demo', companionId: 'companion-lin', destination: '瑞穗', meetingPoint: '瑞穗車站', date: getDemoServiceDate(), startTime: '14:00', durationMinutes: 240, partySize: 2, language: '英文', service: 'language-support', notes: '', rewardId: reward.id })
     expect(request.ok).toBe(true)
     if (!request.ok) return
     expect(request.value.routeRewards[0]).toMatchObject({ status: 'redeemed', redeemedRequestId: request.value.serviceRequests[0].id })
-    expect(request.value.serviceRequests[0]).toMatchObject({ discountAmount: 200, price: 1350, status: 'pending' })
+    expect(request.value.serviceRequests[0]).toMatchObject({ discountAmount: 200, price: 2000, status: 'pending' })
   })
 })

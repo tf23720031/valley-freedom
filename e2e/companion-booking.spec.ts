@@ -1,10 +1,11 @@
+import { getDemoServiceDate } from '../src/domain/fixtures'
 import { expect, test } from '@playwright/test'
 
 test('three-day trip adds a time-slot companion inquiry and a coastal place as separate draft items', async ({ page }) => {
   await page.goto('/login')
   await page.getByRole('button', { name: '直接使用測試帳號' }).click()
   await page.goto('/itinerary')
-  await page.getByLabel('第一天日期').fill('2026-11-14')
+  await page.getByLabel('第一天日期').fill(getDemoServiceDate())
   await page.getByLabel('旅行天數').selectOption('3')
   await page.getByRole('button', { name: 'DAY 02' }).click()
   await page.getByRole('button', { name: '新增安排', exact: true }).click()
@@ -27,7 +28,7 @@ test('three-day trip adds a time-slot companion inquiry and a coastal place as s
   await expect(page.locator('.trip-event').filter({ hasText: '林雨禾' })).toContainText('已確認')
   await page.goto('/explore/coast-11')
   await page.getByRole('link', { name: /眺港咖啡/ }).click()
-  await page.getByLabel('加入哪一天').fill('2026-11-16')
+  await page.getByLabel('加入哪一天').fill(getDemoServiceDate(3))
   await page.getByRole('button', { name: '加入我的行程' }).click()
   await expect(page.getByText(/已加入自由行程草稿/)).toBeVisible()
   await page.goto('/itinerary')

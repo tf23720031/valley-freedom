@@ -39,7 +39,7 @@ describe('VALLEY FREEDOM application shell', () => {
   it('guides a guest to login when opening a personal workspace', () => {
     window.history.pushState({}, '', '/itinerary')
     render(<App />)
-    expect(screen.getByRole('dialog', { name: '登入 VALLEY FREEDOM' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: '登入後即可繼續這項操作。' })).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: '直接使用測試帳號' }))
     expect(screen.getByRole('heading', { name: '我的自由行' })).toBeInTheDocument()
   })

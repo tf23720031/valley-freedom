@@ -1,3 +1,4 @@
+import { getDemoServiceDate } from '../../domain/fixtures'
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, ArrowRight, CalendarDays, MapPin } from 'lucide-react'
@@ -19,7 +20,7 @@ export function RegionalExplorePage() {
   const { placeId, regionId } = useParams()
   const notify = useNotify(), navigate = useNavigate()
   const state = useAppState()
-  const [date, setDate] = useState('2026-11-16')
+  const [date, setDate] = useState(getDemoServiceDate())
   const place = placeId ? getPlaceById(placeId) : undefined
 
   if (placeId) {

@@ -3,16 +3,15 @@ import { makeId } from './fixtures'
 import { calculateBookingRevenue, type BookingDuration } from './revenueShare'
 
 export interface CompanionSearch { destination: string; date: string; startTime: string; durationMinutes: number; duration?: BookingDuration; partySize: number; language: string; service: CompanionService; itineraryId?: string }
-export const estimateCompanionFee = (durationMinutes: number, ratePerHour: number) => Math.ceil(durationMinutes / 30) * ratePerHour / 2
-export function updateCompanionProfile(state: AppState, input: { companionId: string; avatar: string; bio: string; ratePerHour: number; gender?: Companion['gender']; birthDate?: string; avatarImageKey?: string }): DomainResult<AppState> {
+export function updateCompanionProfile(state: AppState, input: { companionId: string; avatar: string; bio: string; gender?: Companion['gender']; birthDate?: string; avatarImageKey?: string }): DomainResult<AppState> {
   const companion = state.companions.find((item) => item.id === input.companionId)
-  if (!companion || !input.avatar.trim() || !input.bio.trim() || input.bio.trim().length > 100 || !Number.isFinite(input.ratePerHour) || input.ratePerHour <= 0) return { ok: false, error: { code: 'INVALID_COMPANION_PROFILE', message: '請填寫照片、100 字內介紹與有效時薪。' } }
+  if (!companion || !input.avatar.trim() || !input.bio.trim() || input.bio.trim().length > 100) return { ok: false, error: { code: 'INVALID_COMPANION_PROFILE', message: '請填寫照片與 100 字內介紹。' } }
   if (input.birthDate) {
     const birth = new Date(`${input.birthDate}T00:00:00`), today = new Date(); let age = today.getFullYear() - birth.getFullYear()
     if (today.getMonth() < birth.getMonth() || (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate())) age -= 1
     if (Number.isNaN(birth.getTime()) || birth > new Date(`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}T00:00:00`) || age < 20) return { ok: false, error: { code: 'INVALID_AGE', message: '在地旅伴須年滿 20 歲，且出生日期不可在未來。' } }
   }
-  return { ok: true, value: { ...state, companions: state.companions.map((item) => item.id === companion.id ? { ...item, avatar: input.avatar.trim(), bio: input.bio.trim(), ratePerHour: Math.round(input.ratePerHour), ...(input.gender ? { gender: input.gender } : {}), ...(input.birthDate ? { birthDate: input.birthDate } : {}), avatarImageKey: input.avatarImageKey } : item) } }
+  return { ok: true, value: { ...state, companions: state.companions.map((item) => item.id === companion.id ? { ...item, avatar: input.avatar.trim(), bio: input.bio.trim(), ...(input.gender ? { gender: input.gender } : {}), ...(input.birthDate ? { birthDate: input.birthDate } : {}), avatarImageKey: input.avatarImageKey } : item) } }
 }
 const active = (status: ServiceRequestStatus) => ['pending', 'accepted', 'countered', 'confirmed'].includes(status)
 const mins = (time: string) => { const [h, m] = time.split(':').map(Number); return h * 60 + m }
@@ -49,8 +48,12 @@ export function createServiceRequest(state: AppState, input: CompanionSearch & {
   if (!experience || !state.shopProfile.id) return fail('partner', '目前沒有可預約的合作體驗項目。')
   const revenue = calculateBookingRevenue({ duration, partySize: input.partySize, assumptions: state.revenueAssumptions })
   if (!revenue.ok) return fail('revenue', revenue.error)
+  const reward = input.rewardId ? state.routeRewards.find((item) => item.id === input.rewardId && item.status === 'available') : undefined
+  if (input.rewardId && !reward) return fail('reward', '這張旅伴折抵券已使用或不存在。')
   const request: ServiceRequest = { id: makeId('request'), travelerId: input.travelerId, companionId: companion.id, itineraryId: input.itineraryId, experienceId: experience.id, operatorId: state.shopProfile.id, revenueSnapshot: revenue.value, legacyEstimate: false, status: 'pending', destination: input.destination, meetingPoint: input.meetingPoint, date: input.date, startTime: input.startTime, durationMinutes, partySize: input.partySize, language: input.language, service: input.service, notes: input.notes, price: revenue.value.gross, createdAt: now, updatedAt: now }
-  return { ok: true, value: { ...state, serviceRequests: [...state.serviceRequests, request] }, valueId: request.id }
+  if (reward) { request.rewardId = reward.id; request.discountAmount = Math.min(reward.amount, request.price) }
+  const routeRewards = state.routeRewards.map((item) => item.id === reward?.id ? { ...item, status: 'redeemed' as const, redeemedRequestId: request.id } : item)
+  return { ok: true, value: { ...state, routeRewards, serviceRequests: [...state.serviceRequests, request] }, valueId: request.id }
 }
 export function companionRespond(state: AppState, input: { requestId: string; companionId: string; action: 'accept' | 'reject' | 'counter'; note?: string; startTime?: string; durationMinutes?: number; price?: number }, now = new Date().toISOString()): DomainResult<AppState> {
   const request = state.serviceRequests.find((item) => item.id === input.requestId && item.companionId === input.companionId)

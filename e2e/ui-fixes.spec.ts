@@ -1,8 +1,10 @@
+import { getDemoServiceDate } from '../src/domain/fixtures'
 import { expect, test } from '@playwright/test'
 
 test('login opens in place and demo account returns to the protected destination', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto('/itinerary')
+  await page.getByRole('button', { name: '使用其他登入方式' }).click()
   const dialog = page.getByRole('dialog', { name: '登入 VALLEY FREEDOM' })
   await expect(dialog).toBeVisible()
   await expect(page).toHaveURL(/\/itinerary$/)
@@ -18,17 +20,17 @@ test('login opens in place and demo account returns to the protected destination
 
 test('itinerary sorts events by clock time and shows the open interval', async ({ page }) => {
   await page.goto('/')
-  await page.evaluate(() => {
+  await page.evaluate(({ serviceDate, endDate }) => {
     const key = 'valley-freedom-state-v1'
     const state = JSON.parse(localStorage.getItem(key) || '{}')
     state.authenticated = true
     state.role = 'traveler'
-    state.itineraries = [{ id: 'e2e-trip', travelerId: state.travelerId, title: '三天旅行', date: '2026-11-14', endDate: '2026-11-16', dayCount: 3, budget: 9000, interests: [], updatedAt: new Date().toISOString(), items: [
-      { id: 'walk', kind: 'free', category: '景點', title: '縱谷散步', date: '2026-11-14', startTime: '14:00', endTime: '15:30', price: 0, place: '瑞穗' },
-      { id: 'farm', kind: 'free', category: '地方體驗', title: '文旦田裡的一日農事', date: '2026-11-14', startTime: '09:30', endTime: '11:30', price: 680, place: '瑞穗' },
+    state.itineraries = [{ id: 'e2e-trip', travelerId: state.travelerId, title: '三天旅行', date: serviceDate, endDate: endDate, dayCount: 3, budget: 9000, interests: [], updatedAt: new Date().toISOString(), items: [
+      { id: 'walk', kind: 'free', category: '景點', title: '縱谷散步', date: serviceDate, startTime: '14:00', endTime: '15:30', price: 0, place: '瑞穗' },
+      { id: 'farm', kind: 'free', category: '地方體驗', title: '文旦田裡的一日農事', date: serviceDate, startTime: '09:30', endTime: '11:30', price: 680, place: '瑞穗' },
     ] }]
     localStorage.setItem(key, JSON.stringify(state))
-  })
+  }, { serviceDate: getDemoServiceDate(), endDate: getDemoServiceDate(3) })
   await page.goto('/itinerary')
   const events = page.locator('.trip-event h3')
   await expect(events.nth(0)).toHaveText('文旦田裡的一日農事')
@@ -74,13 +76,13 @@ test('companion photo upload persists locally and blocks underage profiles', asy
 
 test('experience session cards and companion attendance checkbox remain usable on mobile', async ({ page }) => {
   await page.goto('/')
-  await page.evaluate(() => {
+  await page.evaluate(({ serviceDate, endDate }) => {
     const key = 'valley-freedom-state-v1'
     const state = JSON.parse(localStorage.getItem(key) || '{}')
     state.authenticated = true
-    state.serviceRequests = [{ id: 'confirmed-companion-e2e', travelerId: state.travelerId, companionId: state.companionId, status: 'confirmed', destination: '瑞穗', meetingPoint: '瑞穗車站', date: '2026-11-14', startTime: '13:00', durationMinutes: 90, partySize: 1, language: '英文', service: 'language-support', notes: '', price: 1350, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }]
+    state.serviceRequests = [{ id: 'confirmed-companion-e2e', travelerId: state.travelerId, companionId: state.companionId, status: 'confirmed', destination: '瑞穗', meetingPoint: '瑞穗車站', date: serviceDate, startTime: '09:00', durationMinutes: 240, partySize: 1, language: '英文', service: 'language-support', notes: '', price: 2000, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }]
     localStorage.setItem(key, JSON.stringify(state))
-  })
+  }, { serviceDate: getDemoServiceDate(), endDate: getDemoServiceDate(3) })
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto('/experiences/experience-1')
   const option = page.locator('.session-option').first()

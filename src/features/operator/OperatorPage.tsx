@@ -1,3 +1,4 @@
+import { getDemoServiceDate } from '../../domain/fixtures'
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { ArrowRight, CalendarDays, Check, Plus, X } from 'lucide-react'
@@ -18,8 +19,8 @@ export function OperatorPage() {
   const [cancelReason, setCancelReason] = useState('場域安排異動')
   const [sessionExperience, setSessionExperience] = useState(state.experiences[0]?.id ?? '')
   const [experienceForm, setExperienceForm] = useState({ title: '', category: '食農體驗', description: '', price: '500', durationMinutes: '90', location: '木日光文旦驛站', image: '' })
-  const [sessionForm, setSessionForm] = useState({ date: '2026-11-14', startTime: '09:00', endTime: '11:00', capacity: '8' })
-  const [taskForm, setTaskForm] = useState({ title: '', category: '活動接待', description: '', date: '2026-11-14', startTime: '08:30', endTime: '12:30', hours: '4', pay: '900', slots: '1', location: '木日光文旦驛站' })
+  const [sessionForm, setSessionForm] = useState({ date: getDemoServiceDate(), startTime: '09:00', endTime: '11:00', capacity: '8' })
+  const [taskForm, setTaskForm] = useState({ title: '', category: '活動接待', description: '', date: getDemoServiceDate(), startTime: '08:30', endTime: '12:30', hours: '4', pay: '900', slots: '1', location: '木日光文旦驛站' })
   const [editingExperience, setEditingExperience] = useState<string | null>(null)
   const [capacityEdits, setCapacityEdits] = useState<Record<string, string>>({})
   const [lastPublishedId, setLastPublishedId] = useState<string | null>(null)
