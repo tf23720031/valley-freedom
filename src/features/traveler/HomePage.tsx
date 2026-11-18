@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom'
 import { useEffect, useRef, useState } from 'react'
 import { ArrowDown, ArrowDownRight, ArrowRight, ArrowUpRight, Clock3, MapPin, X } from 'lucide-react'
 import { Link } from 'react-router-dom'
@@ -140,13 +141,13 @@ export function HomePage() {
           </Link>)}
         </div>
       </div>
-      {mobileExperience && <div className="experience-preview-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setMobileExperience(null) }}>
+      {mobileExperience && createPortal(<div className="experience-preview-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setMobileExperience(null) }}>
         <section ref={experiencePreviewDialog} tabIndex={-1} className="experience-preview-modal" role="dialog" aria-modal="true" aria-labelledby="experience-preview-title" aria-label={mobileExperience.title}>
           <button className="experience-preview-close" type="button" aria-label="關閉介紹" onClick={() => setMobileExperience(null)}><X size={20} /></button>
           <img src={mobileExperience.image} alt={`${mobileExperience.title}的示意照片`} />
           <div className="experience-preview-copy"><span>{mobileExperience.category}／{mobileExperience.location}・示意資料</span><h2 id="experience-preview-title">{mobileExperience.title}</h2><p>{mobileExperience.description}</p><div><span><Clock3 size={15} /> 建議停留 {mobileExperience.durationMinutes} 分鐘</span><b>NT$ {mobileExperience.price.toLocaleString()} <small>費用示意</small></b></div><Link className="button button-primary" to={`/experiences/${mobileExperience.id}`}>前往體驗詳情 <ArrowUpRight size={16} /></Link></div>
         </section>
-      </div>}
+      </div>, document.body)}
     </section>
 
     <section className="home-companions" aria-labelledby="companions-title">

@@ -17,7 +17,7 @@ export function useDialogBehavior<T extends HTMLElement = HTMLElement>(open: boo
       'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])',
     ) ?? []).filter((element) => element.getAttribute('aria-hidden') !== 'true')
 
-    const focusFrame = window.requestAnimationFrame(() => (getFocusable()[0] ?? dialog)?.focus())
+    const focusFrame = window.requestAnimationFrame(() => (getFocusable()[0] ?? dialog)?.focus({ preventScroll: true }))
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         event.preventDefault()
@@ -47,7 +47,7 @@ export function useDialogBehavior<T extends HTMLElement = HTMLElement>(open: boo
       window.cancelAnimationFrame(focusFrame)
       document.removeEventListener('keydown', onKeyDown)
       document.body.style.overflow = previousOverflow
-      previousFocus?.focus()
+      previousFocus?.focus({ preventScroll: true })
     }
   }, [open])
 

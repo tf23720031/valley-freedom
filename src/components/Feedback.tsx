@@ -1,4 +1,5 @@
-import { createContext, useContext, useMemo, useState } from 'react'
+import { createPortal } from 'react-dom'
+import { createContext, useContext, useMemo, useState, useId } from 'react'
 import { Check, X } from 'lucide-react'
 import { useDialogBehavior } from './useDialogBehavior'
 
@@ -20,7 +21,15 @@ export function useNotify() {
 }
 
 export function ConfirmDialog({ open, title, description, confirmLabel = '確認', cancelLabel = '返回', onCancel, onConfirm, danger = false, confirmDisabled = false, children }: { open: boolean; title: string; description: string; confirmLabel?: string; cancelLabel?: string; onCancel: () => void; onConfirm: () => void; danger?: boolean; confirmDisabled?: boolean; children?: React.ReactNode }) {
+  const titleId = useId()
+  const descriptionId = useId()
   const dialogRef = useDialogBehavior(open, onCancel)
   if (!open) return null
-  return <div className="dialog-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onCancel() }}><section ref={dialogRef} tabIndex={-1} className="confirm-dialog" role="alertdialog" aria-modal="true" aria-labelledby="confirm-title" aria-describedby="confirm-description"><span className="eyebrow">請再次確認</span><h2 id="confirm-title">{title}</h2><p id="confirm-description">{description}</p>{children}<div className="dialog-actions"><button className="button button-quiet" onClick={onCancel}>{cancelLabel}</button><button disabled={confirmDisabled} className={`button ${danger ? 'button-danger' : 'button-primary'}`} onClick={onConfirm}>{confirmLabel}</button></div></section></div>
+  return createPortal(<div className="dialog-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onCancel() }}>
+    <section ref={dialogRef} tabIndex={-1} className="confirm-dialog" role="alertdialog" aria-modal="true" aria-labelledby={titleId} aria-describedby={descriptionId}>
+      <header className="stable-dialog-header"><div><span className="eyebrow">{danger ? '取消與變更' : '預約確認'}</span><h2 id={titleId}>{title}</h2></div><button type="button" className="stable-dialog-close" aria-label="關閉視窗" onClick={onCancel}><X size={22}/></button></header>
+      <div className="stable-dialog-body"><p id={descriptionId}>{description}</p>{children}</div>
+      <footer className="dialog-actions stable-dialog-footer"><button type="button" className="button button-quiet" onClick={onCancel}>{cancelLabel}</button><button type="button" disabled={confirmDisabled} className={`button ${danger ? 'button-danger' : 'button-primary'}`} onClick={onConfirm}>{confirmLabel}</button></footer>
+    </section>
+  </div>, document.body)
 }

@@ -1,0 +1,44 @@
+/* Dialog surfaces never inherit page motion or use transforms for positioning. */
+.dialog-backdrop, .experience-info-backdrop, .experience-preview-backdrop, .login-modal-backdrop, .booking-request-modal,
+.confirm-dialog, .experience-info-modal, .experience-preview-modal, .login-modal, .booking-request-dialog, .booking-request-content {
+  animation: none !important; transition: none !important; transform: none !important; translate: none !important; filter: none !important;
+}
+.dialog-backdrop, .experience-info-backdrop, .experience-preview-backdrop, .login-modal-backdrop {
+  position: fixed; inset: 0; z-index: 2000; display: grid; place-items: center; padding: 16px;
+  overflow: auto; background: rgb(16 40 38 / .68); backdrop-filter: none;
+}
+.dialog-backdrop { z-index: 2100; }
+.confirm-dialog, .experience-info-modal {
+  position: relative; display: flex; flex-direction: column; width: min(100%, 680px); max-width: 100%;
+  max-height: calc(100dvh - 32px); min-height: 0; margin: 0; padding: 0; overflow: hidden;
+  border: 1px solid #a9b6a5; border-top: 3px solid #ad643e; border-radius: 2px; background: #f6f3e9; color: #103e3e;
+  box-shadow: 0 20px 60px #092c3030;
+}
+.confirm-dialog { width: min(100%, 560px); }
+.stable-dialog-header { flex: 0 0 auto; display: flex; align-items: start; justify-content: space-between; gap: 16px; padding: 20px 24px; border-bottom: 1px solid #c5cec0; background: #f6f3e9; }
+.stable-dialog-header > span { align-self: center; color: #103e3e; font-size: 16px; font-weight: 700; }
+.stable-dialog-header h2 { margin: 8px 0 0; color: #103e3e; font-size: clamp(23px, 4vw, 30px); font-weight: 900; line-height: 1.4; }
+.stable-dialog-header .eyebrow { margin: 0; color: #7a654e; font-size: 10px; }
+.stable-dialog-header .modal-close, .stable-dialog-close { position: static; display: grid; place-items: center; flex: 0 0 44px; width: 44px; height: 44px; min-height: 44px; margin: -7px -8px -7px 0; padding: 8px; border: 0; color: #103e3e; background: transparent; cursor: pointer; }
+.stable-dialog-body { flex: 1 1 auto; min-height: 0; padding: 24px; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; scrollbar-width: thin; }
+.stable-dialog-body > p { color: #536354; font-size: 14px; line-height: 1.85; }
+.stable-dialog-body .experience-info-photo { display: block; width: 100%; height: clamp(130px, 22vh, 210px); margin: 0 0 22px; object-fit: cover; }
+.stable-dialog-body > h2 { margin: 10px 0; color: #103e3e; font-size: clamp(24px, 4vw, 32px); font-weight: 900; }
+.stable-dialog-body .field-label { margin: 18px 0; color: #103e3e; font-size: 13px; }
+.stable-dialog-body .field-label input, .stable-dialog-body .field-label select { min-height: 48px; width: 100%; min-width: 0; padding: 10px 12px; border: 1px solid #8c9f8a; border-radius: 0; color: #103e3e; background: #fffdf5; font-size: 16px; }
+.stable-dialog-body .experience-info-facts { display: flex; flex-wrap: wrap; gap: 8px 18px; margin: 18px 0; padding: 14px 0; border-block: 1px solid #c5cec0; font-size: 12px; line-height: 1.8; }
+.stable-dialog-footer, .confirm-dialog .dialog-actions { flex: 0 0 auto; display: flex; align-items: center; justify-content: flex-end; gap: 12px; margin: 0; padding: 16px 24px calc(16px + env(safe-area-inset-bottom)); border-top: 1px solid #c5cec0; background: #f6f3e9; }
+.stable-dialog-footer .button { min-height: 48px; margin: 0; border-radius: 0; padding: 12px 18px; line-height: 1.5; }
+.stable-dialog-footer .button-primary { background: #103e3e; border-color: #103e3e; color: #fffdf5; }
+.experience-info-modal .stable-dialog-footer .button { width: 100%; }
+.confirm-dialog .confirmation-summary { padding: 14px; background: #e8ebd5; font-size: 13px; line-height: 1.7; }
+.confirm-dialog .confirmation-results { margin: 0; padding: 0; }
+.experience-info-modal button, .confirm-dialog button, .login-modal button, .booking-request-modal button, .experience-preview-modal button { transform: none !important; translate: none !important; }
+.login-modal, .experience-preview-modal { max-height: calc(100dvh - 32px); overflow-y: auto; }
+@media (max-width: 560px) {
+  .dialog-backdrop, .experience-info-backdrop, .experience-preview-backdrop, .login-modal-backdrop { padding: 12px; }
+  .confirm-dialog, .experience-info-modal, .login-modal, .experience-preview-modal { max-height: calc(100dvh - 24px); }
+  .stable-dialog-header { padding: 16px 18px; }.stable-dialog-body { padding: 18px; }
+  .stable-dialog-footer, .confirm-dialog .dialog-actions { padding: 12px 18px calc(12px + env(safe-area-inset-bottom)); }
+  .confirm-dialog .dialog-actions .button { flex: 1; min-width: 0; }
+}
