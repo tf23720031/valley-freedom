@@ -17,5 +17,6 @@ import './styles/companion-journal.css'
 import './styles/experience-journal.css'
 import './styles/itinerary-journal.css'
 import './styles/stable-dialogs.css'
+import './styles/map-journal.css'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(<React.StrictMode><App /></React.StrictMode>)

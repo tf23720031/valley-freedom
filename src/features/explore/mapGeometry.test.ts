@@ -1,4 +1,8 @@
+/// <reference types="vite/client" />
 import { describe, expect, it } from 'vitest'
+import countyGeoJSON from '../../../public/data/taiwan-counties.geojson?raw'
+import { geoContains } from 'd3-geo'
+import { districts } from '../../domain/districts'
 import { clusterProjectedPlaces, createProjectedPlaces, fitTaiwanProjection, layoutMarkerLabels, mainlandCounties, type MapPlaceCoordinate } from './mapGeometry'
 
 const counties = {
@@ -14,6 +18,26 @@ const counties = {
 }
 
 describe('projected place map', () => {
+  it('keeps real route coordinates inside their source county and anchors on the county projection', () => {
+    const actualCounties = JSON.parse(countyGeoJSON)
+    const mainland = mainlandCounties(actualCounties)
+    const places = districts.flatMap((region) => region.places)
+    const projected = createProjectedPlaces(actualCounties, places.map((place) => ({
+      id: place.id, name: place.name, ...place.coordinates,
+    })), 600, 760)
+    const projection = fitTaiwanProjection(actualCounties, 600, 760)
+    expect(projected).toHaveLength(places.filter((place) => place.coordinates).length)
+    for (const point of projected) {
+      const source = places.find((place) => place.id === point.id)!
+      const countyName = source.address?.startsWith('花蓮') ? '花蓮縣' : '臺東縣'
+      const county = mainland.features.find((feature) => feature.properties.COUNTYNAME === countyName)!
+      expect(geoContains(county, [point.longitude!, point.latitude!]), source.name).toBe(true)
+      const expected = projection([point.longitude!, point.latitude!])!
+      expect(point.anchorX, source.name).toBeCloseTo(expected[0], 8)
+      expect(point.anchorY, source.name).toBeCloseTo(expected[1], 8)
+    }
+    expect(projected.some((point) => point.id === 'rice-like-fu')).toBe(false)
+  })
   it('clusters nearby anchors and expands the same group without changing geographic anchors', () => {
     const places = createProjectedPlaces(counties, [
       { id: 'a', name: '甲', longitude: 121.2, latitude: 23.4 },
