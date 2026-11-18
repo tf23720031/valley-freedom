@@ -1,12 +1,32 @@
 import { expect, test } from '@playwright/test'
 
+test('mobile guest can reach navigation and login from the companion page', async ({ page }) => {
+  for (const width of [320, 390]) {
+    await page.setViewportSize({ width, height: 844 })
+    await page.goto('/companions')
+    for (const label of ['登入', '開啟導覽']) {
+      const button = page.getByRole('button', { name: label, exact: true })
+      const box = await button.boundingBox()
+      expect(box).not.toBeNull()
+      expect(box!.x).toBeGreaterThanOrEqual(0)
+      expect(box!.x + box!.width).toBeLessThanOrEqual(width)
+    }
+    await page.getByRole('button', { name: '開啟導覽' }).click()
+    await expect(page.getByRole('navigation', { name: '主要導覽' }).getByRole('link', { name: '地方體驗' })).toBeVisible()
+    await page.getByRole('button', { name: '關閉導覽' }).click()
+    await page.getByRole('button', { name: '登入', exact: true }).click()
+    await expect(page.getByRole('dialog', { name: '登入 VALLEY FREEDOM' })).toBeVisible()
+    await page.keyboard.press('Escape')
+  }
+})
+
 for (const reducedMotion of ['no-preference', 'reduce'] as const) {
   test(`traveler can edit and submit a companion request (${reducedMotion})`, async ({ page }) => {
     await page.emulateMedia({ reducedMotion })
     await page.goto('/companions')
     const requestButton = page.getByRole('button', { name: /提出預約需求/ }).first()
     await requestButton.click()
-    const dialog = page.getByRole('dialog', { name: '提出旅伴預約需求' })
+    const dialog = page.getByRole('dialog', { name: '填寫預約需求' })
     await expect(dialog).toBeVisible()
     await expect.poll(() => dialog.evaluate((element) => {
       const rect = element.getBoundingClientRect()

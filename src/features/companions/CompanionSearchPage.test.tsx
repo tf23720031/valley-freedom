@@ -31,7 +31,7 @@ describe('companion package booking', () => {
     const user = userEvent.setup()
     renderSearch()
     await user.click(screen.getAllByRole('button', { name: /提出預約需求/ })[0])
-    const dialog = screen.getByRole('dialog', { name: '提出旅伴預約需求' })
+    const dialog = screen.getByRole('dialog', { name: '填寫預約需求' })
     expect(dialog.parentElement).toBe(document.body)
     expect(within(dialog).getByText('NT$ 2,000')).toBeInTheDocument()
     await user.clear(within(dialog).getByLabelText('集合位置'))

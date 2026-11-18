@@ -19,7 +19,7 @@ const experienceSeed: Array<[string, string, string, number, number]> = [
   ['老屋裡的地方記憶', '聚落走讀', '從器物與照片拼起聚落生活片段。', 80, 380],
   ['縱谷晨光攝影散步', '自然觀察', '用慢速步行捕捉山線和水田的晨間光影。', 90, 0],
 ]
-const companionPortraits: Record<string, string> = {
+export const companionPortraits: Record<string, string> = {
   'companion-lin': 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&crop=faces&w=720&h=720&q=88',
   'companion-chen': 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&crop=faces&w=720&h=720&q=88',
   'companion-wu': 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&crop=faces&w=720&h=720&q=88',
